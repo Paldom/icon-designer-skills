@@ -24,9 +24,13 @@ treat `$ARGUMENTS` as the skill name or idea to scope in step 1.
    fixes. If the sentence needs "and", split into multiple skills and do them one at
    a time. Check `skills/` and the README catalog for overlap — near-neighbor
    descriptions steal each other's triggers; adjust scope or plan disjoint wording.
-2. **Gather.** Read `.local/` for source material (research, examples, constraints).
-   Facts a skill will depend on go into `skills/<name>/references/` as cleaned,
-   committed files — never cite `.local/` paths from a skill.
+2. **Gather.** Read `.local/` recursively — every subfolder and file is source
+   material (research, examples, constraints). Then research beyond it: web-search
+   the topic for current facts, official docs, and prior art; verify anything
+   load-bearing against primary sources, and cross-validate contested or
+   high-stakes facts (external APIs, schemas, security claims) with /cross when
+   available. Verified facts a skill depends on go into `skills/<name>/references/`
+   as cleaned, committed files — never cite `.local/` paths from a skill.
 3. **Evals first.** Create `skills/<name>/evals/evals.json` per `docs/evals.md`:
    ≥8 `should_trigger` (vary formality, typos, terseness), ≥8 `should_not_trigger`
    (near-misses sharing keywords), 3–5 `quality` cases with plain-language

@@ -22,8 +22,12 @@ distributed via the plugin manifest in `.claude-plugin/`.
 - Every added/changed skill updates the README catalog table and `CHANGELOG.md`.
 - Never use `git commit --no-verify` or force-push main (hooks block the common
   forms in agent sessions; the server-side `main` ruleset is the real gate).
-- `.local/` is gitignored personal material (only its README is committed) — read it,
-  never commit its contents, never cite it as a committed path.
+- Commits are authored **on the owner's behalf**: use the repo-local git identity
+  (the owner's account), and never mention Claude/AI assistance in commit messages
+  or PR bodies — no AI co-author trailers.
+- `.local/` is gitignored personal material (only its README is committed) — read
+  ALL of it recursively, never commit its contents, never cite it as a committed
+  path.
 
 ## Where things are
 
