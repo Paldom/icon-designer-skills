@@ -7,6 +7,11 @@ versioning: [SemVer](https://semver.org) on the plugin manifest
 
 ## [Unreleased]
 
+### Added
+- skills.sh distribution: `npx skills add Paldom/icon-designer-skills` quick
+  start, repo-page grouping (`skills.sh.json`), a `skills-sh` CI job mirroring
+  the consumer install, `docs/deploying.md`, and the bundled `publish-repo` skill.
+
 ## [0.2.0] - 2026-07-04
 
 ### Added

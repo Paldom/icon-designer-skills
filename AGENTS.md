@@ -19,7 +19,11 @@ distributed via the plugin manifest in `.claude-plugin/`.
 - `name` equals the folder name, kebab-case.
 - SKILL.md bodies < 500 lines; long material goes to `references/` (linked one level
   deep); deterministic steps go to `scripts/` with non-zero exit on failure.
-- Every added/changed skill updates the README catalog table and `CHANGELOG.md`.
+- Every added/changed skill updates the README catalog table, `CHANGELOG.md`, and
+  its `skills.sh.json` grouping.
+- Publication to skills.sh happens ONLY via the bundled `/publish-repo` skill
+  (slash-invoked, needs the owner's go-ahead) — never flip repo visibility ad hoc.
+  Deployment model: docs/deploying.md.
 - Never use `git commit --no-verify` or force-push main (hooks block the common
   forms in agent sessions; the server-side `main` ruleset is the real gate).
 - Commits are authored **on the owner's behalf**: use the repo-local git identity
@@ -37,4 +41,5 @@ distributed via the plugin manifest in `.claude-plugin/`.
 - Hooks: `.claude/hooks/` (SKILL.md write-time validation, bash guard) — wired in
   `.claude/settings.json`; changes to them get PR-level scrutiny.
 - The `add-skill` skill (`.claude/skills/add-skill/`) walks the authoring
-  workflow — prefer it over ad-hoc skill writing.
+  workflow — prefer it over ad-hoc skill writing. The `publish-repo` skill
+  (`.claude/skills/publish-repo/`) walks skills.sh deployment.

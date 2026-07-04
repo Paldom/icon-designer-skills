@@ -48,8 +48,10 @@ treat `$ARGUMENTS` as the skill name or idea to scope in step 1.
    prompts, reason explicitly: would the description alone (not the body) route this
    prompt here, against every other skill in the catalog? Fix the description, not
    the evals. Recommend the user run 2–3 fresh-session probes for the riskiest cases.
-7. **Register.** Add/update the skill's row in the README catalog table and add a
-   `CHANGELOG.md` entry. Re-check descriptions of sibling skills for new overlap.
+7. **Register.** Add/update the skill's row in the README catalog table, add a
+   `CHANGELOG.md` entry, and put the skill in exactly one `skills.sh.json`
+   grouping (engaging one-sentence group descriptions — that file is the repo's
+   skills.sh listing copy). Re-check descriptions of sibling skills for new overlap.
 
 ## Output spec (Definition of Done)
 

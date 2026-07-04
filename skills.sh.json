@@ -1,0 +1,16 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "notGrouped": "bottom",
+  "groupings": [
+    {
+      "title": "Design pipeline",
+      "description": "Brief to shipped assets: derive a minimalist concept, draw the master SVG on an Apple-style rounded rectangle, critique it at real pixel sizes, and export every platform format.",
+      "skills": [
+        "icon-brief",
+        "icon-draw",
+        "icon-critique",
+        "icon-export"
+      ]
+    }
+  ]
+}
