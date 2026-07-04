@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <title>ICON_NAME</title>
+  <rect id="bg" width="1024" height="1024" rx="229" fill="#2A2A2E"/>
+  <!-- Glyph: symmetric about x=512. Axis-straddling parts drawn once, centered;
+       off-axis parts live in #half and are mirrored by the second <use>. -->
+  <defs>
+    <g id="half">
+      <!-- off-axis shapes, entirely on the x<512 side -->
+    </g>
+  </defs>
+  <g id="glyph" fill="#E8E8EA">
+    <use href="#half"/>
+    <use href="#half" transform="translate(1024,0) scale(-1,1)"/>
+    <!-- centered shapes here -->
+  </g>
+</svg>

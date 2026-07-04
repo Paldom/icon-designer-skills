@@ -27,13 +27,18 @@ cp -r icon-designer-skills/skills/<skill-name> your-project/.claude/skills/
 ```
 
 Then just describe the task in Claude Code — the skill activates on its description —
-or invoke it explicitly with `/<skill-name>`.
+or invoke it explicitly with `/<skill-name>`. To run the whole pipeline
+(brief → draw → critique → export) against a repo in one supervised session, paste
+the ready-made goal prompt from [docs/setup-prompt.md](docs/setup-prompt.md).
 
 ## Skills
 
 | Skill | Description |
 | --- | --- |
-| _none yet_ | Skills are added via the workflow in [CONTRIBUTING.md](CONTRIBUTING.md). |
+| [icon-brief](skills/icon-brief/) | Derives a minimalist icon design brief from a text prompt or the current repo — 3-5 symbol concepts (one Gestalt device each), symmetry axis, house palette, distinctiveness notes. |
+| [icon-draw](skills/icon-draw/) | Draws the icon as a master 1024×1024 SVG — symmetric glyph on a dark grey rounded-rectangle (Apple-style radius) — as 2-4 lint-clean candidates ready for critique. |
+| [icon-critique](skills/icon-critique/) | Renders candidates at 512/64/32/16 px and reviews the pixels against a fixed rubric, applying targeted SVG fixes with a hard iteration cap before the human picks a winner. |
+| [icon-export](skills/icon-export/) | Exports the approved master SVG to platform assets — favicon set, PWA/maskable, App Store/Play PNGs, macOS icns, GitHub social preview — with overwrite guards and size validation. |
 
 ## Repository structure
 

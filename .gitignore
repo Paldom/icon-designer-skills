@@ -236,3 +236,6 @@ Thumbs.db
 
 # Claude Code per-machine settings
 .claude/settings.local.json
+
+# Local review artifacts (never published)
+.claude/curator-reports/

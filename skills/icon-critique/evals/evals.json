@@ -1,0 +1,64 @@
+{
+  "skill": "icon-critique",
+  "cases": [
+    { "type": "should_trigger", "prompt": "critique this icon svg" },
+    { "type": "should_trigger", "prompt": "review my app icon - does it hold up at 16px?" },
+    { "type": "should_trigger", "prompt": "render the icon candidates and tell me which is best" },
+    { "type": "should_trigger", "prompt": "check the icons in icon-design/candidates at favicon size" },
+    { "type": "should_trigger", "prompt": "my icon looks muddy when its small, can you fix it" },
+    { "type": "should_trigger", "prompt": "does this logo mark still read as a bell at 32px?" },
+    { "type": "should_trigger", "prompt": "compare the three icon candidates and pick the strongest" },
+    { "type": "should_trigger", "prompt": "the glyph feels off center in the icon - review and adjust it" },
+    { "type": "should_trigger", "prompt": "run a small-size legibility pass on icon.svg" },
+    { "type": "should_trigger", "prompt": "rate my icon against the design rubric" },
+    { "type": "should_not_trigger", "prompt": "design an app icon for my project" },
+    { "type": "should_not_trigger", "prompt": "icon ideas for a music app" },
+    { "type": "should_not_trigger", "prompt": "export favicons from the approved icon" },
+    { "type": "should_not_trigger", "prompt": "review this pull request" },
+    { "type": "should_not_trigger", "prompt": "critique my landing page design" },
+    { "type": "should_not_trigger", "prompt": "review our toolbar icon set for visual consistency" },
+    { "type": "should_not_trigger", "prompt": "why does my png look blurry in the readme?" },
+    { "type": "should_not_trigger", "prompt": "review my svg chart rendering code" },
+    { "type": "should_not_trigger", "prompt": "convert this random svg file to png for me" },
+    { "type": "should_not_trigger", "prompt": "make the icon bigger in the navbar component" },
+    {
+      "type": "quality",
+      "prompt": "review the candidates in icon-design/candidates/ and improve the winner",
+      "expected_behavior": [
+        "renders every candidate with scripts/render_icon.py at 512 plus the 64/32/16 strip before judging anything",
+        "reads the rendered PNGs and scores each candidate against the fixed rubric (16px silhouette, one Gestalt device, stroke consistency, optical centering, distinctiveness, contrast)",
+        "applies targeted SVG element edits as non-destructive revision files (-r1.svg) rather than regenerating or overwriting originals",
+        "re-renders after edits and stops within the 3-iteration cap",
+        "presents a ranked verdict with per-candidate one-line reasons and asks the human to approve before any export"
+      ]
+    },
+    {
+      "type": "quality",
+      "prompt": "my icon is unreadable at 16px, fix it",
+      "expected_behavior": [
+        "renders the icon at 16/32/64 first and states what actually vanishes, based on the render not the source code",
+        "applies the smallest targeted fix (thicken stroke, enlarge counter, drop the dying detail) and re-renders to confirm",
+        "runs check_svg.py-compatible constraints (does not introduce banned SVG features while fixing)",
+        "stops after the iteration cap even if imperfect, reporting remaining issues"
+      ]
+    },
+    {
+      "type": "quality",
+      "prompt": "critique icon.svg on this machine with no svg tools installed",
+      "expected_behavior": [
+        "runs the render script, which reports every renderer it tried and per-tool install hints",
+        "on macOS falls back to the built-in qlmanage renderer automatically",
+        "if no renderer exists, stops with the install instructions instead of critiquing unrendered SVG source"
+      ]
+    },
+    {
+      "type": "quality",
+      "prompt": "make my icon prettier",
+      "expected_behavior": [
+        "translates the vague request into specific rubric findings (what fails at which size, which device is muddy) instead of freeform aesthetic edits",
+        "states the limits of automated aesthetic judgment and keeps the human as the final judge of taste",
+        "any edit is justified by a named rubric axis"
+      ]
+    }
+  ]
+}

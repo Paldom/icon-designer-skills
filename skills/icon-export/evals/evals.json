@@ -1,0 +1,62 @@
+{
+  "skill": "icon-export",
+  "cases": [
+    { "type": "should_trigger", "prompt": "export favicons from icon-design/icon.svg" },
+    { "type": "should_trigger", "prompt": "generate all the app icon assets from my master svg" },
+    { "type": "should_trigger", "prompt": "make a favicon.ico and apple touch icon from our icon" },
+    { "type": "should_trigger", "prompt": "produce the play store and app store icon pngs" },
+    { "type": "should_trigger", "prompt": "create the macos icns from icon.svg" },
+    { "type": "should_trigger", "prompt": "set up the pwa manifest icons including maskable from our icon" },
+    { "type": "should_trigger", "prompt": "icon.svg -> all platform sizes plz" },
+    { "type": "should_trigger", "prompt": "generate a github social preview image from the repo icon" },
+    { "type": "should_trigger", "prompt": "cut the icon into favicon and app icon sizes and give me the html tags" },
+    { "type": "should_trigger", "prompt": "we approved candidate 2 - ship the icon asset set" },
+    { "type": "should_not_trigger", "prompt": "design an app icon for my project" },
+    { "type": "should_not_trigger", "prompt": "icon concepts for a chat app" },
+    { "type": "should_not_trigger", "prompt": "does my icon read at 16px?" },
+    { "type": "should_not_trigger", "prompt": "export this chart as a png" },
+    { "type": "should_not_trigger", "prompt": "convert this random svg I downloaded to png" },
+    { "type": "should_not_trigger", "prompt": "resize these product photos into thumbnails" },
+    { "type": "should_not_trigger", "prompt": "publish the npm package" },
+    { "type": "should_not_trigger", "prompt": "add the favicon link tag to index.html for our existing favicon.png" },
+    { "type": "should_not_trigger", "prompt": "make the icon corners rounder" },
+    { "type": "should_not_trigger", "prompt": "generate an og:image for this blog post" },
+    {
+      "type": "quality",
+      "prompt": "export all icon assets from icon-design/icon.svg",
+      "expected_behavior": [
+        "runs scripts/export_icons.py rather than hand-rendering sizes",
+        "produces the web set (favicon.ico with 16/32/48, icon.svg, apple-touch-icon-180, icon-192, icon-512, maskable 512), the square-variant store set (App Store 1024, Play Store 512), the macOS iconset (icns on macOS), and the GitHub social preview 1280x640",
+        "platform-masked targets are exported from the full-square variant (background rx=0), never double-rounded",
+        "reports the validated output table (file, size) and includes the HTML head + web manifest snippets",
+        "refuses to overwrite existing files unless the user explicitly allows --force"
+      ]
+    },
+    {
+      "type": "quality",
+      "prompt": "just the favicons please, no store or mac assets",
+      "expected_behavior": [
+        "passes --targets web to the export script so only the favicon/PWA set is produced",
+        "does not generate store, macOS, or social assets",
+        "still validates output dimensions and prints the snippets"
+      ]
+    },
+    {
+      "type": "quality",
+      "prompt": "export the icon assets (no approved master exists yet)",
+      "expected_behavior": [
+        "notices icon-design/icon.svg is missing and does not invent or pick a master silently",
+        "points the user to icon-draw/icon-critique to produce and approve a master first, or asks which SVG to treat as approved"
+      ]
+    },
+    {
+      "type": "quality",
+      "prompt": "replace the existing favicons in public/ with ones from our new icon",
+      "expected_behavior": [
+        "lists which existing files in public/ would be overwritten before doing it",
+        "uses --out public/ --force only after the user confirms (or the request itself was explicit about replacing)",
+        "verifies the new files afterwards and summarizes what changed"
+      ]
+    }
+  ]
+}

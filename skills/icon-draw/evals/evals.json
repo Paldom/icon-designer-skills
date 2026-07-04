@@ -1,0 +1,62 @@
+{
+  "skill": "icon-draw",
+  "cases": [
+    { "type": "should_trigger", "prompt": "design an app icon for kubetail" },
+    { "type": "should_trigger", "prompt": "create an icon for this repo" },
+    { "type": "should_trigger", "prompt": "draw a minimalist icon for my markdown editor as SVG" },
+    { "type": "should_trigger", "prompt": "generate an app icon - symmetric glyph on a dark rounded square" },
+    { "type": "should_trigger", "prompt": "make me a package icon for this OSS project" },
+    { "type": "should_trigger", "prompt": "need an ios style icon for my side project, dark background pls" },
+    { "type": "should_trigger", "prompt": "can u make the icon svg from icon-design/brief.md" },
+    { "type": "should_trigger", "prompt": "turn concept 2 from the brief into an actual icon" },
+    { "type": "should_trigger", "prompt": "simple geometric logo mark for my cli tool, dark theme" },
+    { "type": "should_trigger", "prompt": "make an apple-style rounded square icon for the app" },
+    { "type": "should_not_trigger", "prompt": "brainstorm icon ideas for my app" },
+    { "type": "should_not_trigger", "prompt": "what symbol should represent a vpn app?" },
+    { "type": "should_not_trigger", "prompt": "critique this icon svg - does it work at 16px?" },
+    { "type": "should_not_trigger", "prompt": "export favicon.ico and store assets from my icon" },
+    { "type": "should_not_trigger", "prompt": "design a set of toolbar icons for the editor UI" },
+    { "type": "should_not_trigger", "prompt": "vectorize this PNG logo into SVG" },
+    { "type": "should_not_trigger", "prompt": "build a full brand identity with wordmark and typography" },
+    { "type": "should_not_trigger", "prompt": "add an icon next to the save button in the navbar" },
+    { "type": "should_not_trigger", "prompt": "draw an svg illustration of a mountain landscape" },
+    { "type": "should_not_trigger", "prompt": "design a banner image for the repo readme" },
+    {
+      "type": "quality",
+      "prompt": "Design an app icon for 'pulse', an uptime monitoring tool",
+      "expected_behavior": [
+        "uses icon-design/brief.md if present, otherwise writes a 5-line inline brief (concept, Gestalt device, axis, palette) before drawing",
+        "writes 2-4 candidate SVGs to icon-design/candidates/, each 1024x1024 viewBox with the dark-grey rounded-rectangle background at rx ~229",
+        "glyphs are symmetric about the declared axis, built from primitives with at most 2 decimal coordinates, no gradients/filters/text/image elements",
+        "runs scripts/check_svg.py on every candidate and fixes all reported errors before presenting",
+        "hands off to icon-critique rather than declaring the icon finished"
+      ]
+    },
+    {
+      "type": "quality",
+      "prompt": "draw candidates for concept 1 in icon-design/brief.md",
+      "expected_behavior": [
+        "reads the existing brief and respects its palette, axis, and Gestalt device without re-ideating",
+        "produces variations of the named concept only, not new concepts",
+        "candidate files follow the icon-design/candidates/<n>-<slug>.svg naming"
+      ]
+    },
+    {
+      "type": "quality",
+      "prompt": "make the app icon with a photo of my dog embedded in it",
+      "expected_behavior": [
+        "declines to embed raster images (no <image> elements in the safe subset) and explains why in one or two lines",
+        "offers a stylized symmetric glyph interpretation of the subject as the compliant alternative"
+      ]
+    },
+    {
+      "type": "quality",
+      "prompt": "make our icon look basically like the docker whale but for our product",
+      "expected_behavior": [
+        "flags the trademark/derivative-mark risk of copying a well-known logo",
+        "proposes a distinct silhouette that serves the same metaphor instead",
+        "does not reproduce the referenced mark"
+      ]
+    }
+  ]
+}
