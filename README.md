@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/Paldom/icon-designer-skills/actions/workflows/ci.yml/badge.svg)](https://github.com/Paldom/icon-designer-skills/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![skills.sh](https://skills.sh/b/Paldom/icon-designer-skills)](https://skills.sh/Paldom/icon-designer-skills)
 
 Agent Skills that design minimalist app and OSS package icons from a text brief or project context - symmetric logos on dark grey, Apple-style rounded-rectangle backgrounds.
 

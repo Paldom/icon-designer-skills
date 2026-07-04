@@ -1,6 +1,7 @@
 ---
 name: icon-export
 description: Exports an approved master icon SVG into platform assets - favicon.ico + SVG favicon, apple-touch-icon, PWA 192/512 + maskable, App/Play Store PNGs, macOS icns, GitHub social preview, plus HTML/manifest snippets. Use when the user asks to export, generate, or ship favicons, app icon files, or store icons, or to wire the exported set into a repo. Not for designing, ideating, or critiquing icons.
+license: MIT
 argument-hint: <master.svg path> [--targets web,apple,android,github]
 ---
 

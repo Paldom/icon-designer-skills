@@ -1,6 +1,7 @@
 ---
 name: icon-brief
 description: Derives a minimalist icon design brief from a text prompt or the current repo - 3-5 symbol concepts (one Gestalt device each), symmetry axis, dark-grey house palette, distinctiveness notes. Use when the user wants icon ideas, icon concepts, symbol metaphors, or a pre-drawing brief for an app/package icon. Not for drawing the SVG, critiquing renders, or exporting icon assets.
+license: MIT
 argument-hint: <product name or one-line description>
 ---
 

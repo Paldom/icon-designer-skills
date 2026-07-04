@@ -1,6 +1,7 @@
 ---
 name: icon-draw
 description: Draws a minimalist app or OSS package icon as a master 1024x1024 SVG - symmetric glyph on a dark grey rounded-rectangle (Apple-style radius). Use when the user asks to design, create, draw, generate, or make an app icon, package icon, or simple logo mark. Not for icon concept brainstorming, critiquing renders, exporting favicon/assets, UI icon sets, or vectorizing images.
+license: MIT
 argument-hint: <brief path, concept name, or one-line product description>
 ---
 
