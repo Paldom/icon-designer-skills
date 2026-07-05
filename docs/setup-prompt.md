@@ -47,14 +47,14 @@ Pipeline (strict order; parallelism only where stated):
    re-read the final 16px render next to the brief's chosen concept, confirm
    the export table matches references/platform-targets.md expectations, and
    list residual warnings honestly.
-7. COMMIT — one commit at the end from the orchestrator only (no per-phase
-   commits): icon-design/ plus any wired assets, message describing the chosen
-   concept and the gates passed. Do not commit if any gate above is red.
+7. HANDOFF — never run git commit or git push: leave icon-design/ and any
+   wired assets in the working tree, and report the chosen concept, the gates
+   passed, and the changed-file list so I can review and commit.
 
 Definition of Done: brief.md present; ≥2 lint-clean candidates; critique table
 + renders on disk; approved icon-design/icon.svg; export directory validated
-with exit 0; single commit created (or explicitly skipped because a gate is
-red and reported).
+with exit 0; nothing committed — change-set reported for my review (with any
+red gates called out honestly).
 ```
 
 ---

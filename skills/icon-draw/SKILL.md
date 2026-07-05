@@ -56,7 +56,7 @@ skill exists to prevent exactly those failures.
 5. **Lint every candidate** and fix every error before presenting:
 
    ```bash
-   python3 <skill-dir>/scripts/check_svg.py icon-design/candidates/1-<slug>.svg --axis v
+   python3 "${CLAUDE_SKILL_DIR}/scripts/check_svg.py" icon-design/candidates/1-<slug>.svg --axis v
    ```
 
    (`--axis h` for horizontal symmetry, `--axis none` only when the brief

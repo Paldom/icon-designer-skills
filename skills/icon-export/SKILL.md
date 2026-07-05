@@ -29,7 +29,7 @@ leaves transparent corner slivers.
 2. **Run the exporter** (deterministic; does everything below itself):
 
    ```bash
-   python3 <skill-dir>/scripts/export_icons.py icon-design/icon.svg \
+   python3 "${CLAUDE_SKILL_DIR}/scripts/export_icons.py" icon-design/icon.svg \
        [--out DIR] [--targets web,apple,android,github] [--name icon] [--force]
    ```
 

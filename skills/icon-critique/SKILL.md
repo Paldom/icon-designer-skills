@@ -26,7 +26,7 @@ iteration cap.
    fail its security checks (external refs, DOCTYPE, scripts, `<image>`):
 
    ```bash
-   python3 skills/icon-draw/scripts/check_svg.py <file>.svg   # or the skill's installed path
+   python3 "${CLAUDE_SKILL_DIR}/../icon-draw/scripts/check_svg.py" <file>.svg   # or the skill's installed path
    ```
 
    If the linter isn't available, say the file is unvetted and get explicit
@@ -36,7 +36,7 @@ iteration cap.
    `icon-design/candidates/`):
 
    ```bash
-   python3 <skill-dir>/scripts/render_icon.py <file>.svg --sizes 512,64,32,16 --html
+   python3 "${CLAUDE_SKILL_DIR}/scripts/render_icon.py" <file>.svg --sizes 512,64,32,16 --html
    ```
 
    The script autodetects a renderer (rsvg-convert → resvg → cairosvg →
