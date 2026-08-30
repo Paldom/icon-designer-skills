@@ -13,9 +13,9 @@ Outputs, grouped by --targets (default: all):
   github  social-preview-1280x640.png, avatar-512.png (rounded)
 
 Platform-masked targets (App Store, Play, apple-touch-icon, maskable) are
-rendered from a derived FULL-SQUARE variant (background rx set to 0) so the
-platform's own mask is the only rounding. Self-rendered surfaces keep the
-rounded-rect master look.
+rendered from a derived FULL-SQUARE variant — the master's rounded background
+is replaced by a plain full-bleed square — so the platform's own mask is the
+only rounding. Self-rendered surfaces keep the master's squircle.
 
 Pure stdlib. Autodetects a renderer (rsvg-convert → resvg → cairosvg →
 inkscape → ImageMagick → macOS qlmanage). Refuses to overwrite existing files
@@ -154,15 +154,81 @@ def make_renderer(tool: str):
     raise ValueError(tool)
 
 
+def stripping(render):
+    """Wrap a renderer so no PNG leaves this exporter carrying metadata."""
+    def wrapped(svg, w, h, out):
+        ok = render(svg, w, h, out)
+        if ok:
+            strip_png_metadata(Path(out))
+        return ok
+    return wrapped
+
+
 def detect():
     for tool in ("rsvg-convert", "resvg", "cairosvg", "inkscape", "magick", "qlmanage"):
         if shutil.which(tool):
-            return tool, make_renderer(tool)
+            return tool, stripping(make_renderer(tool))
     try:
         import cairosvg  # noqa: F401
-        return "cairosvg-module", make_renderer("cairosvg-module")
+        return "cairosvg-module", stripping(make_renderer("cairosvg-module"))
     except ImportError:
         return None
+
+
+PNG_SIG = b"\x89PNG\r\n\x1a\n"
+# Ancillary PNG chunks that carry provenance/authoring metadata rather than
+# pixels. Renderers inject these silently — macOS qlmanage/sips writes an eXIf
+# chunk into every PNG and an Adobe XMP iTXt packet into some. caBX is where a
+# C2PA manifest would live if raster tooling ever entered the pipeline.
+# Colour-critical chunks (sRGB/gAMA/cHRM/iCCP/tRNS/PLTE/bKGD/sBIT) are kept:
+# dropping those changes how the image renders.
+PNG_META_CHUNKS = {b"eXIf", b"tEXt", b"iTXt", b"zTXt", b"tIME", b"caBX", b"dSIG"}
+STRIPPED = [0, 0]   # files touched, bytes removed — reported at the end
+
+
+def strip_png_metadata(path: Path) -> int:
+    """Remove metadata chunks from a PNG in place; return bytes removed.
+
+    PNG CRCs are per-chunk, so whole chunks can be dropped without recomputing
+    anything. Any malformed/truncated file is left untouched.
+    """
+    try:
+        d = path.read_bytes()
+    except OSError:
+        return 0
+    if not d.startswith(PNG_SIG):
+        return 0
+    out = bytearray(d[:8])
+    i, removed = 8, 0
+    while i + 12 <= len(d):
+        ln = struct.unpack(">I", d[i:i + 4])[0]
+        typ = d[i + 4:i + 8]
+        end = i + 12 + ln
+        if end > len(d):
+            return 0                      # truncated — do not rewrite
+        if typ in PNG_META_CHUNKS:
+            removed += end - i
+        else:
+            out += d[i:end]
+        i = end
+        if typ == b"IEND":
+            break
+    if not removed:
+        return 0
+    path.write_bytes(bytes(out))
+    STRIPPED[0] += 1
+    STRIPPED[1] += removed
+    return removed
+
+
+def clean_svg_copy(src: Path, dest: Path) -> None:
+    """Ship the master without authoring comments or <metadata> blocks."""
+    text = src.read_text(encoding="utf-8")
+    text = re.sub(r"<!--.*?-->", "", text, flags=re.S)
+    text = re.sub(r"<metadata\b[^>]*>.*?</metadata>", "", text, flags=re.S)
+    text = re.sub(r"[ \t]+$", "", text, flags=re.M)
+    text = re.sub(r"\n{2,}", "\n", text)
+    dest.write_text(text.strip() + "\n", encoding="utf-8")
 
 
 def png_size(path: Path) -> tuple[int, int] | None:
@@ -192,6 +258,7 @@ def flatten_appstore_png(path: Path, bg_fill: str) -> None:
     if shutil.which("magick") and run(
             ["magick", str(path), "-background", bg_fill, "-alpha", "remove",
              "-alpha", "off", str(path)]) and not png_has_alpha_channel(path):
+        strip_png_metadata(path)
         print(f"note: flattened alpha channel on {path.name} (App Store requires no alpha)",
               file=sys.stderr)
         return
@@ -256,14 +323,38 @@ def load_master(path: Path):
 
 
 def square_variant(tree: ET.ElementTree, dest: Path) -> str | None:
-    """Copy of the master with the background rect un-rounded (rx=ry=0)."""
+    """Copy of the master with the rounded background replaced by a full square.
+
+    Platform-masked targets (App Store, apple-touch-icon, Play, maskable PWA,
+    Icon Composer) apply their own corner mask; feeding them pre-rounded art
+    double-masks it. The master's background is either the generated squircle
+    <path id="bg"> or a legacy rounded <rect> — both become a plain square here.
+    """
     t = copy.deepcopy(tree)
     root = t.getroot()
-    bg = root.find(f"{{{SVG_NS}}}rect")
-    if bg is None or bg.get("width") != "1024":
-        return "master has no full-canvas background <rect> — not an icon-draw master"
-    bg.set("rx", "0")
-    bg.set("ry", "0")
+    bg = None
+    for el in root.iter():
+        tag = el.tag.rsplit("}", 1)[-1]
+        if tag == "path" and el.get("id") == "bg":
+            bg = el
+            break
+        if tag == "rect" and el.get("width") == "1024":
+            bg = el
+            break
+    if bg is None:
+        return ('master has no background <path id="bg"> or full-canvas <rect> '
+                "— not an icon-draw master")
+    if bg.tag.rsplit("}", 1)[-1] == "path":
+        fill = bg.get("fill", "#2A2A2E")
+        bg.tag = f"{{{SVG_NS}}}rect"
+        bg.attrib.clear()
+        bg.set("id", "bg")
+        bg.set("width", "1024")
+        bg.set("height", "1024")
+        bg.set("fill", fill)
+    else:
+        bg.set("rx", "0")
+        bg.set("ry", "0")
     root.set("width", "1024")
     root.set("height", "1024")
     t.write(dest, encoding="utf-8", xml_declaration=False)
@@ -287,16 +378,65 @@ def social_variant(tree: ET.ElementTree, dest: Path) -> str | None:
     return None
 
 
+def selfcheck() -> int:
+    """PNG chunk surgery must drop metadata and keep everything that renders."""
+    import zlib
+    def chunk(typ: bytes, payload: bytes) -> bytes:
+        return (struct.pack(">I", len(payload)) + typ + payload
+                + struct.pack(">I", zlib.crc32(typ + payload) & 0xFFFFFFFF))
+    png = (PNG_SIG
+           + chunk(b"IHDR", struct.pack(">IIBBBBB", 1, 1, 8, 6, 0, 0, 0))
+           + chunk(b"sRGB", b"\x00")
+           + chunk(b"gAMA", struct.pack(">I", 45455))
+           + chunk(b"eXIf", b"MM\x00*deadbeef")
+           + chunk(b"tEXt", b"Software\x00qlmanage")
+           + chunk(b"iTXt", b"XML:com.adobe.xmp\x00\x00\x00\x00\x00<x:xmpmeta/>")
+           + chunk(b"IDAT", zlib.compress(b"\x00\xff\xff\xff\xff"))
+           + chunk(b"IEND", b""))
+    with tempfile.TemporaryDirectory() as td:
+        f = Path(td) / "t.png"
+        f.write_bytes(png)
+        before = STRIPPED[1]
+        removed = strip_png_metadata(f)
+        got = f.read_bytes()
+        assert removed > 0 and STRIPPED[1] == before + removed
+        for gone in (b"eXIf", b"tEXt", b"iTXt", b"adobe.xmp", b"qlmanage"):
+            assert gone not in got, gone
+        for kept in (PNG_SIG, b"IHDR", b"sRGB", b"gAMA", b"IDAT", b"IEND"):
+            assert kept in got, kept
+        assert png_size(f) == (1, 1)                     # pixels untouched
+        assert strip_png_metadata(f) == 0                # idempotent
+        f.write_bytes(png[:20])                          # truncated
+        assert strip_png_metadata(f) == 0 and f.read_bytes() == png[:20]
+
+        svg = Path(td) / "m.svg"
+        svg.write_text('<svg xmlns="http://www.w3.org/2000/svg">\n  <!-- note -->\n'
+                       '  <metadata><rdf/></metadata>\n  <rect width="1"/>\n</svg>\n')
+        dest = Path(td) / "out.svg"
+        clean_svg_copy(svg, dest)
+        t = dest.read_text()
+        assert "<!--" not in t and "metadata" not in t and "<rect" in t, t
+    print("selfcheck OK")
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("master", type=Path, help="approved master SVG (icon-design/icon.svg)")
+    ap.add_argument("master", type=Path, nargs="?",
+                    help="approved master SVG (icon-design/icon.svg)")
     ap.add_argument("--out", type=Path, default=Path("icon-design/export"))
     ap.add_argument("--targets", default="all",
                     help="comma list of web,apple,android,github (default: all)")
     ap.add_argument("--name", default="icon", help="basename for icon.svg/iconset")
+    ap.add_argument("--selfcheck", action="store_true",
+                    help="run the built-in metadata-strip checks and exit")
     ap.add_argument("--force", action="store_true", help="allow overwriting existing files")
     args = ap.parse_args()
 
+    if args.selfcheck:
+        return selfcheck()
+    if args.master is None:
+        return fail("MASTER.svg is required (or pass --selfcheck)", 2)
     if not args.master.is_file():
         return fail(f"no such file: {args.master} — approve a master via icon-critique first")
     targets = ALL_TARGETS if args.targets == "all" else tuple(
@@ -402,8 +542,8 @@ def main() -> int:
                     failures += 1
                 else:
                     print(f"WROTE {ico} (sizes {'/'.join(map(str, ICO_SIZES))})")
-            shutil.copyfile(args.master, out / f"{args.name}.svg")
-            print(f"WROTE {out / (args.name + '.svg')} (master copy)")
+            clean_svg_copy(args.master, out / f"{args.name}.svg")
+            print(f"WROTE {out / (args.name + '.svg')} (master copy, comments stripped)")
             for rel, content in (("snippet.html", SNIPPET_HTML), ("manifest.webmanifest", MANIFEST)):
                 (out / rel).write_text(content, encoding="utf-8")
                 print(f"WROTE {out / rel}")
@@ -423,6 +563,9 @@ def main() -> int:
     if failures:
         print(f"FAIL: {failures} asset(s) failed (renderer: {tool})")
         return 1
+    if STRIPPED[0]:
+        print(f"STRIPPED metadata from {STRIPPED[0]} PNG(s) ({STRIPPED[1]} bytes: "
+              f"{'/'.join(c.decode() for c in sorted(PNG_META_CHUNKS))} chunks)")
     print(f"OK: export complete in {out} (renderer: {tool})")
     if tool == "qlmanage":
         print("note: rendered via macOS qlmanage fallback — install librsvg "

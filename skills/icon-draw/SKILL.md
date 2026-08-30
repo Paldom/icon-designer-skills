@@ -28,15 +28,38 @@ skill exists to prevent exactly those failures.
    have provenance — and state it to the user; for anything ambitious,
    recommend `icon-brief` instead. Never draw without a stated concept.
 2. **Start from the template.** Copy `assets/master-template.svg` (relative to
-   this skill) mentally or literally: square `viewBox="0 0 1024 1024"`,
-   background `<rect width="1024" height="1024" rx="229" fill="#2A2A2E"/>`.
-   rx 229 ≈ 22.37% of the side — the community-measured approximation of
-   Apple's icon mask; see `references/icon-geometry.md` before changing it.
-3. **Construct the glyph on the 64-unit grid.** Coordinates land on multiples
-   of 64/32/16 wherever possible; max 2 decimals ever. Prefer primitives
-   (`rect`, `circle`, `line`, `polygon`) over `<path>`; use paths only for
-   shapes primitives can't express, with absolute commands. Budget: ≤ 5 major
-   shapes, 1 stroke width (2 max, ≥ 48 units), ≤ 3 colors total.
+   this skill): square `viewBox="0 0 1024 1024"` and a background
+   `<path id="bg">` that is a real **squircle** — Apple's corner is a
+   continuous curve, not a circular arc, so a plain `rx` rect renders subtly
+   wrong beside system icons. Never hand-write or hand-edit that path;
+   regenerate it:
+
+   ```bash
+   python3 "${CLAUDE_SKILL_DIR}/scripts/squircle.py"            # iOS 26+ (radius 25.78%, smoothing 0.6)
+   python3 "${CLAUDE_SKILL_DIR}/scripts/squircle.py" --legacy   # iOS 7-18 (22.37%)
+   ```
+
+   Both radii are community measurements, not Apple-published constants —
+   `references/icon-geometry.md` has the provenance. Read it before changing
+   the shape.
+3. **Draw the object the brief names**, on the 64-unit grid. Coordinates land
+   on multiples of 64/32/16 wherever possible; max 2 decimals ever. Use a
+   primitive when the shape *is* a primitive (a disc is a `<circle>`, a bar is
+   a `<rect>`) and a `<path>` with absolute commands when the subject has a
+   silhouette — one well-made path that reads as a drop, an arch or a bird
+   beats five primitives arranged into something that only reads as an
+   arrangement. Budget: 1 stroke width (2 max, ≥ 48 units), ≤ 3 colors total.
+   **There is no shape-count budget** — element count was measured against a
+   66-mark ballot and predicted nothing. What predicts survival is *mass*:
+   - **Fill, don't outline.** A filled silhouette with knockout details beats
+     an outline of the same object. Pure-fill marks were rejected at half the
+     rate of marks carrying a stroked element.
+   - **Aim for ~20% ink coverage** at 64 px. `render_icon.py` prints `ink=`
+     for every render; the heaviest third of that ballot had a *zero*
+     rejection rate, the thinnest third was rejected at twice the base rate.
+   - **Cut detail out of the mass** rather than adding parts beside it —
+     background-coloured knockouts inside a solid body (figure-ground) is the
+     construction that won most often.
    - **Symmetry by construction** (vertical axis): draw axis-straddling parts
      centered on x=512, put off-axis parts in `<defs><g id="half">…</g></defs>`
      and render with
@@ -53,15 +76,20 @@ skill exists to prevent exactly those failures.
    one concept), each a separate file: `icon-design/candidates/<n>-<slug>.svg`.
    Never overwrite an existing candidate — continue from the next free number.
    Vary silhouette between candidates, not just sizes of the same idea.
-5. **Lint every candidate** and fix every error before presenting:
+5. **Lint every candidate:**
 
    ```bash
    python3 "${CLAUDE_SKILL_DIR}/scripts/check_svg.py" icon-design/candidates/1-<slug>.svg --axis v
    ```
 
-   (`--axis h` for horizontal symmetry, `--axis none` only when the brief
-   explicitly waives symmetry.) The linter also warns on thin strokes, glyph
-   too small/large, and maskable-safe-zone risk — resolve or justify each.
+   (`--axis h` for horizontal symmetry, `--axis none` when the brief declares
+   an organic subject.) **Fix every ERROR** — those are the safe-subset and
+   output-contract checks, and a candidate that trips one is unusable.
+   **Weigh the WARNs** — symmetry, centring, glyph size, stroke weight and
+   maskable safe zone are house guidance, not truth. Report each one you leave
+   standing and why. Deforming a mark that reads well in order to silence a
+   geometry warning is the wrong trade; `--strict` promotes them all to errors
+   if you want the old fail-closed behaviour for a batch.
 6. **Hand off.** Present the candidates (paths + one-line rationale each) and
    recommend `icon-critique` to render and review them. Do not declare the icon
    final and do not export — approval happens after critique.
@@ -90,8 +118,15 @@ skill exists to prevent exactly those failures.
   flag it and propose a distinct silhouette for the same metaphor.
 - Letterform glyphs: `<text>` is banned (font availability breaks renders);
   drawing a letter as paths is allowed but costs legibility at 16px — say so.
-- The linter can't judge beauty: passing it means *valid*, not *good*. Critique
-  is a separate, mandatory step.
+- The linter can't judge beauty: passing it means *valid*, not *good*. Worse,
+  the correlation can run backwards — in this repo's own bake-off the
+  lint-cleanest candidates were ranked last by a human and the two that failed
+  the linter placed first and second. Use it to catch what would break, never
+  as evidence that a mark is working. Critique is a separate, mandatory step.
+- **Symmetry is a default, not a virtue.** It buys stability and cheap
+  construction on geometric subjects. On an organic subject it deforms the
+  silhouette into something abstract — take `--axis none` from the brief and
+  draw the animal.
 - If the linter can't run (no `python3`, missing script), **fail closed**:
   label the candidates UNVALIDATED, report the gap, and don't hand them to
   critique/export as if they had passed.

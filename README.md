@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/icon.svg" alt="icon-designer-skills icon" width="128"/>
+</p>
+
 # Icon Designer Skills
 
 [![CI](https://github.com/Paldom/icon-designer-skills/actions/workflows/ci.yml/badge.svg)](https://github.com/Paldom/icon-designer-skills/actions/workflows/ci.yml)
@@ -26,7 +30,7 @@ including version-pinned installs from releases:
 
 ```bash
 gh skill install Paldom/icon-designer-skills
-gh skill install Paldom/icon-designer-skills <skill> --pin v0.2.0
+gh skill install Paldom/icon-designer-skills <skill> --pin v0.3.0
 ```
 
 Or as a Claude Code plugin:
@@ -52,9 +56,9 @@ the ready-made goal prompt from [docs/setup-prompt.md](docs/setup-prompt.md).
 
 | Skill | Description |
 | --- | --- |
-| [icon-brief](skills/icon-brief/) | Derives a minimalist icon design brief from a text prompt or the current repo — 3-5 symbol concepts (one Gestalt device each), symmetry axis, house palette, distinctiveness notes. |
-| [icon-draw](skills/icon-draw/) | Draws the icon as a master 1024×1024 SVG — symmetric glyph on a dark grey rounded-rectangle (Apple-style radius) — as 2-4 lint-clean candidates ready for critique. |
-| [icon-critique](skills/icon-critique/) | Renders candidates at 512/64/32/16 px and reviews the pixels against a fixed rubric, applying targeted SVG fixes with a hard iteration cap before the human picks a winner. |
+| [icon-brief](skills/icon-brief/) | Derives a minimalist icon design brief from a text prompt or the current repo — 3-5 symbol concepts that each name a depictable object, symmetry axis, house palette, distinctiveness checks against category clichés and universal UI glyphs. |
+| [icon-draw](skills/icon-draw/) | Draws the icon as a master 1024×1024 SVG — glyph on a dark grey rounded-rectangle (Apple-style radius) — as 2-4 candidates that clear the safe-subset linter, ready for critique. |
+| [icon-critique](skills/icon-critique/) | Renders candidates at 512/64/32/16 px and reviews the pixels against a fixed rubric, applying targeted SVG fixes with a hard iteration cap — then hands every candidate to the human, who picks. |
 | [icon-export](skills/icon-export/) | Exports the approved master SVG to platform assets — favicon set, PWA/maskable, App Store/Play PNGs, macOS icns, GitHub social preview — with overwrite guards and size validation. |
 
 ## Repository structure

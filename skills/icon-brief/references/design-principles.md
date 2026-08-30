@@ -4,9 +4,75 @@ Verified working notes for icon concept work. Sources cited inline; accessed
 2026-07 unless noted. Confidence tags: [strong] = peer-reviewed or multi-source
 consensus, [practitioner] = uncontested trade practice, [weak] = single source.
 
-**Contents:** Gestalt devices · Negative space · Distinctiveness vs the
-"blandemic" · Small-size test ladder · Symmetry notes · Palette & contrast on
-dark grey
+**Contents:** The naming test · The mass test · Gestalt devices · Negative space ·
+Distinctiveness vs the "blandemic" · Small-size test ladder · Symmetry notes ·
+Palette & contrast on dark grey
+
+## The naming test [practitioner]
+
+Before anything else, say what the mark *is* in three words or fewer, as a
+noun phrase: "a drop", "an arch", "a bird's track", "a bolt in a badge". If the
+shortest honest description is a relationship between primitives — "two
+chevrons over a bar", "a diamond inside brackets", "a triangle above three
+bars" — the concept is an arrangement, not a mark, and it should be reworked or
+dropped.
+
+Evidence, in-repo: a five-approach bake-off on three products
+(`.local/icon-approach-comparison/`) was ranked blind by the maintainer. Split
+the twelve top-two and bottom-two finishers by this test and it separates them
+six for six — every mark that named an object placed in the top two of its
+topic, every arrangement placed in the bottom two. Nothing else in this
+document, including geometry cleanliness and small-size survival, predicted the
+ranking as well.
+
+The failure mode is procedural, not aesthetic: "one Gestalt device" plus a tight
+shape budget plus symmetry-by-construction is a recipe for arrangements if you
+let the budget pick the idea. Name the object first; then find the cheapest
+geometry that draws it.
+
+## The mass test [practitioner]
+
+Naming an object is necessary but not sufficient. The second question is
+whether the object has a **body** at icon scale — whether it can be drawn as a
+filled silhouette rather than as lines.
+
+Evidence, in-repo: 66 marks across 22 products, ranked by the maintainer
+(`.local/icon-set/`). Measuring ink coverage of each 64 px render against the
+ballot:
+
+| ink coverage @64 px | share rejected outright | share picked as winner |
+| --- | --- | --- |
+| bottom third (< 16.5%) | **41%** | 27% |
+| middle third | 22% | 22% |
+| top third (> 21%) | **0%** | 52% |
+
+Base rejection rate was 21%. The heaviest third of the field was *never*
+rejected. Two supporting cuts point the same way: marks built purely from
+fills were rejected at 16% versus 30% for anything carrying a stroked element,
+and marks with two or more background-coloured knockouts inside the mass were
+rejected at 14% versus 26% for marks with none.
+
+The casualties were all perfectly nameable objects with no body — a drafting
+compass, a stethoscope, a scaffold, a vernier caliper, a periscope, a
+marionette. Every one of them is *linework*. Meanwhile a theatre mask, a lab
+flask, a hard hat, a hex nut and a padlock all won on the strength of a single
+closed, filled contour.
+
+Practical form of the test, before you commit to a concept:
+
+1. Could a rubber stamp print this object in one solid colour and still read?
+2. If not, is there a solid form of the same idea? (compass → stencil sheet;
+   stethoscope → phone with a lens; scaffold → open book.)
+3. Detail belongs **cut out of** the mass, not added beside it.
+
+Caveats: n=66, one judge, one session. Ink, fill-vs-stroke and knockout count
+are three views of the same underlying property, not three independent
+findings. Treat "make it heavier" as the reliable instruction and the exact
+percentages as this ballot's numbers.
+
+Explicitly **not** predictive: element count. Marks with ≤ 3 elements were
+rejected at 14% and marks with ≥ 6 at 8% — noise. Shape-count budgets measure
+nothing about quality.
 
 ## Gestalt devices (pick exactly ONE per concept) [strong]
 
@@ -81,6 +147,13 @@ Rules:
   intentional symmetry break per concept when justified.
 - Vertical axis reads stable/iconic and suits app icons (centered in a rounded
   square); horizontal axis suits motion/flow metaphors.
+- **Organic subjects get `axis: none`.** Forcing an animal, a plant or a hand
+  onto a symmetry axis costs the silhouette that makes it nameable, and the
+  naming test is the axis that predicts preference. In the in-repo bake-off the
+  symmetric heron concepts (a front-on head, a symmetric footprint) both drifted
+  into abstraction — one of them straight into the download-arrow glyph — while
+  the asymmetric wading-bird silhouettes stayed readable as birds. Symmetry is a
+  default for geometric subjects, not a rule for every subject.
 
 ## Palette & contrast on dark grey [practitioner]
 

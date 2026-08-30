@@ -26,10 +26,12 @@
       "prompt": "review the candidates in icon-design/candidates/ and improve the winner",
       "expected_behavior": [
         "renders every candidate with scripts/render_icon.py at 512 plus the 64/32/16 strip before judging anything",
-        "reads the rendered PNGs and scores each candidate against the fixed rubric (16px silhouette, one Gestalt device, stroke consistency, optical centering, distinctiveness, contrast)",
+        "reads the rendered PNGs and scores each candidate against the fixed rubric (16px silhouette, reads as its subject, one Gestalt device, stroke consistency, optical centering, contrast)",
         "applies targeted SVG element edits as non-destructive revision files (-r1.svg) rather than regenerating or overwriting originals",
         "re-renders after edits and stops within the 3-iteration cap",
-        "presents a ranked verdict with per-candidate one-line reasons and asks the human to approve before any export"
+        "presents every candidate to the human with its scores - never suppresses, discards, or auto-promotes a candidate on the strength of its own scoring, including in headless runs",
+        "states that the rubric is reliable at spotting failure and unreliable at ranking winners, so the ranking is advisory and the human picks",
+        "reads the ink= coverage the renderer reports and flags any candidate under ~16% at 64px as thin, naming the fix (fill the outline, or cut detail out of the mass)"
       ]
     },
     {

@@ -29,7 +29,8 @@
         "produces the web set (favicon.ico with 16/32/48, icon.svg, apple-touch-icon-180, icon-192, icon-512, maskable 512), the square-variant store set (App Store 1024, Play Store 512), the macOS iconset (icns on macOS), and the GitHub social preview 1280x640",
         "platform-masked targets are exported from the full-square variant (background rx=0), never double-rounded",
         "reports the validated output table (file, size) and includes the HTML head + web manifest snippets",
-        "refuses to overwrite existing files unless the user explicitly allows --force"
+        "refuses to overwrite existing files unless the user explicitly allows --force",
+        "exported PNGs carry no eXIf/tEXt/iTXt metadata chunks (renderers inject them silently) while sRGB/gAMA/cHRM are preserved"
       ]
     },
     {

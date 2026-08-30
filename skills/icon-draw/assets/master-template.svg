@@ -1,8 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
   <title>ICON_NAME</title>
-  <rect id="bg" width="1024" height="1024" rx="229" fill="#2A2A2E"/>
+  <!-- Background: Apple-style squircle (continuous corners), radius 25.78% of
+       the side, corner smoothing 0.6 - iOS/iPadOS/macOS 26+. Regenerate with
+       scripts/squircle.py (flag "legacy" gives the iOS 7-18 22.37% shape).
+       Never hand-edit these numbers. -->
+  <path id="bg" d="M 601.62 0 c 147.85 0 221.77 0 278.24 28.77 a 263.99 263.99 0 0 1 115.37 115.37 c 28.77 56.47 28.77 130.39 28.77 278.24 L 1024 601.62 c 0 147.85 0 221.77 -28.77 278.24 a 263.99 263.99 0 0 1 -115.37 115.37 c -56.47 28.77 -130.39 28.77 -278.24 28.77 L 422.38 1024 c -147.85 0 -221.77 0 -278.24 -28.77 a 263.99 263.99 0 0 1 -115.37 -115.37 c -28.77 -56.47 -28.77 -130.39 -28.77 -278.24 L 0 422.38 c 0 -147.85 0 -221.77 28.77 -278.24 a 263.99 263.99 0 0 1 115.37 -115.37 c 56.47 -28.77 130.39 -28.77 278.24 -28.77 Z" fill="#2A2A2E"/>
   <!-- Glyph: symmetric about x=512. Axis-straddling parts drawn once, centered;
-       off-axis parts live in #half and are mirrored by the second <use>. -->
+       off-axis parts live in #half and are mirrored by the second use element.
+       Keep the glyph inside the r=409 safe circle (Apple's grid circle, 80% of
+       the canvas) - that is what survives every platform mask. -->
   <defs>
     <g id="half">
       <!-- off-axis shapes, entirely on the x<512 side -->

@@ -25,11 +25,14 @@
       "type": "quality",
       "prompt": "Icon ideas for 'harbor', a self-hosted container registry",
       "expected_behavior": [
+        "every concept names a single depictable object in three words or less (a lighthouse, an anchor chain link) - concepts describable only as an arrangement of primitives (two chevrons over a bar) are rejected or reworked",
         "produces 3-5 named concepts, each built on exactly one dominant Gestalt device (figure-ground, closure, continuity, etc.)",
-        "each concept states its symmetry axis (vertical or horizontal) and a one-line small-size risk note",
+        "each concept states its symmetry axis (vertical, horizontal, or none with a reason) and a one-line small-size risk note",
         "includes distinctiveness notes comparing against the obvious category cliches (boxes, whales, anchors, shipping containers)",
+        "checks each concept's silhouette against universal UI glyphs (download, upload, eject, play, share, refresh, location pin, chevron stack) and kills any concept that lands on one",
         "specifies the house palette: dark grey background, off-white glyph, at most one accent tone",
-        "writes the brief to icon-design/brief.md and recommends running icon-draw next"
+        "writes the brief to icon-design/brief.md and recommends running icon-draw next",
+        "rejects concepts that can only be drawn as linework (compass, stethoscope, scaffold) in favour of objects with a filled silhouette"
       ]
     },
     {

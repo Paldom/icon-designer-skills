@@ -46,10 +46,15 @@ iteration cap.
 3. **Read the renders** (the PNG files, with the Read tool) — 512 px for
    craft, the 64/32/16 strip for survival (`preview.html` shows 16 px both
    native and pixel-doubled). Score each candidate against the rubric in
-   `references/critique-rubric.md`: 16 px silhouette, one dominant Gestalt
-   device, stroke consistency, optical centering, distinctiveness, contrast
-   on dark. Score 1–5 per axis with a one-line reason grounded in what you
+   `references/critique-rubric.md`: **reads as its subject** (can a stranger
+   name the thing?), **mass** (the `ink=` figure the renderer prints — under
+   ~16% at 64 px is thin, over ~21% is safe), 16 px silhouette, one dominant Gestalt device, stroke
+   consistency, optical centering, contrast on dark, plus a distinctiveness
+   *note*. Score 1–5 per axis with a one-line reason grounded in what you
    actually see ("the gap between the arcs closes up at 32 px").
+   Distinctiveness — including collision with a universal UI glyph — is
+   recorded and shown to the human, never used to drop a candidate: that call
+   belongs to whoever owns the product.
 4. **Fix with targeted edits — only when asked.** Pure review requests
    ("rate", "critique", "compare") end at the verdict; edit only when the
    user asked to fix/improve or approves your proposed fixes. Edits are
@@ -62,13 +67,16 @@ iteration cap.
 5. **Re-render and re-score** each revision. **Hard cap: 3 fix iterations per
    candidate.** If it still fails an axis at the cap, report the residual
    honestly — do not loop, do not lower the bar.
-6. **Verdict + human gate.** Present a ranked table (candidate, axis scores,
-   one-line verdicts), point at `icon-design/renders/*/preview.html` for the
-   human, and **ask the human to pick/approve**. On approval, copy the winner
-   to `icon-design/icon.svg` — the handoff `icon-export` expects — but never
-   replace an existing `icon-design/icon.svg` without explicit confirmation.
-   In explicitly headless runs, promote the top scorer only if every axis ≥ 3
-   and 16 px silhouette ≥ 4, and say that's what happened.
+6. **Verdict + human gate.** Present **every** candidate — including the ones
+   you scored badly — in a ranked table (candidate, axis scores, one-line
+   verdicts), point at `icon-design/renders/*/preview.html`, and **ask the
+   human to pick**. Say plainly that the ranking is advisory. On approval,
+   copy the winner to `icon-design/icon.svg` — the handoff `icon-export`
+   expects — but never replace an existing `icon-design/icon.svg` without
+   explicit confirmation. **Never auto-promote**, headless included: report
+   the scores, name the top scorer, and stop without writing
+   `icon-design/icon.svg`. A run with no human in it produces a
+   recommendation, not an approval.
 
 ## Output spec
 
@@ -83,6 +91,12 @@ iteration cap.
   score in a visible pixel fact, not the intention behind the code. When
   another reviewer is available (subagent, second model, or the human), prefer
   it for the final pass.
+- **This rubric is a failure detector, not a ranker.** In this repo's own
+  bake-off it agreed with the human on every bottom-ranked mark and disagreed
+  on two of three winners — the candidate it declared unrecoverable was the
+  human's first pick. Trust it when it says something is broken; do not trust
+  it to tell you which working mark is best, and never let it be the thing
+  that removes an option from the table.
 - Automated taste doesn't exist: VLM judgment of *operational* qualities
   (legibility, contrast, balance) is workable; open-ended "is it beautiful" is
   not — leave taste to the human, and say so when asked to "make it prettier".

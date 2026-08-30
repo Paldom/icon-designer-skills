@@ -1,7 +1,7 @@
 {
   "name": "icon-designer-skills",
   "description": "Agent Skills that design minimalist app and OSS package icons from a text brief or project context - symmetric logos on dark grey, Apple-style rounded-rectangle backgrounds.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "author": {
     "name": "Paldom",
     "url": "https://github.com/Paldom"

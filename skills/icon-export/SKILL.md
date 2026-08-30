@@ -35,7 +35,8 @@ leaves transparent corner slivers.
 
    - Autodetects a renderer (rsvg-convert → resvg → cairosvg → inkscape →
      ImageMagick → macOS qlmanage+sips); exits 2 with install hints if none.
-   - Derives the **square variant** (background `rx=0`) and the **1280×640
+   - Derives the **square variant** (rounded background swapped for a plain
+     full-bleed square) and the **1280×640
      social banner** internally.
    - **Refuses to overwrite existing files** (exit 3) unless `--force` — list
      the collisions to the user and get an explicit go-ahead first.
@@ -83,4 +84,9 @@ Everything size-validated; exporter exit code 0 is the done signal.
 - SVGO is optional and not required for the master (hand-authored subset SVG
   is already lean); if you run it, keep the viewBox and re-render afterwards
   to confirm nothing visually changed.
+- Every PNG is written **metadata-free**: renderers inject EXIF/XMP silently
+  (macOS `sips` puts an `eXIf` chunk in all of them), so the exporter strips
+  `eXIf`/`tEXt`/`iTXt`/`zTXt`/`tIME`/`caBX`/`dSIG` and keeps the colour chunks.
+  It reports a `STRIPPED` line. This is file hygiene for assets you own — there
+  is no AI-generated raster anywhere in this pipeline to watermark.
 - Details and citations for every size: `references/platform-targets.md`.

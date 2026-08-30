@@ -37,16 +37,34 @@ belong in SVG code.
    top of the brief instead of asking.
 3. **Generate 3-5 concepts.** For each concept:
    - a **name** and one-sentence metaphor ("anchor chain link = registry holds images");
+   - **the object it depicts, in three words or less** — "a lighthouse", "an
+     arch", "a bird's track". If the shortest honest description is an
+     *arrangement* ("two chevrons over a bar", "a diamond inside brackets"),
+     the concept is not ready: rework it until it names a thing, or drop it;
+   - **its mass**: can this object be drawn as a *filled silhouette*? Objects
+     that are naturally linework — a compass, a stethoscope, a scaffold, a
+     caliper, a periscope — have no body at icon scale and lose even when the
+     name is perfect. Either find the solid form of the idea or pick a
+     different object. See the naming and mass tests in
+     `references/design-principles.md`;
    - exactly **one dominant Gestalt device** — figure-ground, closure, continuity,
-     proximity, or similarity-break (see `references/design-principles.md`;
-     never stack devices — stacked cleverness collapses at 16px);
-   - the **symmetry axis**: vertical (default; reads as stable/iconic) or
-     horizontal; note any element that must break symmetry and why;
+     proximity, or similarity-break (never stack devices — stacked cleverness
+     collapses at 16px);
+   - the **symmetry axis**: vertical (default; reads as stable/iconic),
+     horizontal, or **none** when the subject is organic and symmetry would
+     deform it — say which and why;
    - a one-line **16px risk** note (what detail dies first at favicon size).
-4. **Distinctiveness check (anti-blandemic).** List the 3-5 obvious cliché marks in
-   the product's category (e.g. container registry → boxes, whales, cranes). Each
-   proposed concept must differ from all of them in silhouette, not just styling.
-   Kill or rework concepts whose silhouette a competitor could wear unchanged.
+4. **Distinctiveness check (anti-blandemic).** Two comparisons, both required:
+   - **Category clichés.** List the 3-5 obvious marks in the product's category
+     (container registry → boxes, whales, cranes). Each concept must differ
+     from all of them in silhouette, not just styling. Kill or rework concepts
+     whose silhouette a competitor could wear unchanged.
+   - **Universal UI glyphs.** Check each silhouette against the system controls
+     every user already reads fluently: download, upload, eject, play, pause,
+     share, refresh, settings gear, location pin, stacked chevrons, hamburger.
+     A mark that lands on one of these is not a product icon — it is a button.
+     This failure is invisible to linters and renders perfectly at every size,
+     so it has to be caught here.
 5. **Fix the palette.** House style: background dark grey `#26262B`-`#2E2E33`
    range, glyph in off-white `#E8E8EA`, plus **at most one** accent tone. If the
    user demands gradients/rainbows/photorealism, surface the house-style conflict
@@ -64,11 +82,13 @@ Assumptions: <only if any were made>
 Product: <one line>  ·  Audience: <one line>  ·  Category neighbors: <marks to differ from>
 
 ## Concepts   <!-- repeat this block for each of the 3-5 concepts -->
-### 1. <name>  (axis: vertical | horizontal)
+### 1. <name>  (axis: vertical | horizontal | none)
+Depicts: <the object, three words max>
 Metaphor: ...
 Gestalt device: <one>
 16px risk: ...
 Distinct from: <which clichés and how>
+Not a UI glyph: <which control it was checked against>
 
 ## Palette
 Background #2A2A2E · Glyph #E8E8EA · Accent <hex or "none">
@@ -84,6 +104,11 @@ Background #2A2A2E · Glyph #E8E8EA · Accent <hex or "none">
 - **Memorable ≠ distinctive.** A clean generic mark is a failure that looks like
   success; the distinctiveness check (step 4) is the point of this skill, not a
   formality.
+- **An arrangement is not a concept.** Marks that can only be described as
+  primitives in a relationship consistently lose to marks that depict a thing —
+  and they are the natural output of "one Gestalt device + a small shape
+  budget" if you let the budget drive the idea. Name the object first, then
+  find the cheapest geometry that draws it; never the reverse.
 - Symmetry is the house constraint, so distinctiveness must come from silhouette
   and concept — a symmetric layout of a cliché is still a cliché.
 - Don't propose text/letterforms as the primary glyph: marks must work with
