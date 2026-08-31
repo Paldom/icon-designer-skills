@@ -1,6 +1,6 @@
 ---
 name: icon-critique
-description: Renders an app/package icon SVG at 512/64/32/16 px and reviews the pixels against a fixed rubric (16px silhouette, Gestalt device, stroke, centering, distinctiveness), with targeted SVG fixes on request. Use when the user asks to review, critique, compare, rate, or fix an icon or whether it reads at small/favicon sizes. Not for designing icons, ideation, exporting assets, or UI icon-set reviews.
+description: Renders an app/package icon SVG at 512/64/32/16 px and reviews the pixels against a fixed rubric (16px silhouette, Gestalt device, stroke, centering, distinctiveness), with targeted SVG fixes on request. Use when the user asks to review, critique, compare, rate, or fix an icon or whether it reads at small/favicon sizes. Not for creating icons, ideation, or shipping platform assets.
 license: MIT
 argument-hint: <icon.svg path or icon-design/candidates/>
 ---

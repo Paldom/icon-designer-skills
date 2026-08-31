@@ -45,7 +45,8 @@ def corner_params(radius: float, smoothing: float, budget: float) -> dict:
     if p > budget or smoothing > budget / radius - 1:
         raise ValueError(
             f"radius {radius:g} + smoothing {smoothing:g} exceed the corner budget "
-            f"{budget:g}; use a smaller radius")
+            f"{budget:g}; use a smaller radius"
+        )
 
     arc_measure = 90 * (1 - smoothing)
     arc_section = math.sin(math.radians(arc_measure / 2)) * radius * math.sqrt(2)
@@ -63,31 +64,34 @@ def n(v: float) -> str:
     return f"{round(v, 2):g}"
 
 
-def squircle_path(size: float = 1024.0, radius_pct: float = RADIUS_PCT_IOS26,
-                  smoothing: float = SMOOTHING) -> str:
+def squircle_path(
+    size: float = 1024.0, radius_pct: float = RADIUS_PCT_IOS26, smoothing: float = SMOOTHING
+) -> str:
     """SVG `d` for a square squircle from (0,0) to (size,size)."""
     q = corner_params(size * radius_pct, smoothing, size / 2)
     a, b, c, d, p, arc, r = (q["a"], q["b"], q["c"], q["d"], q["p"], q["arc"], q["r"])
     abc = a + b + c
-    return " ".join([
-        f"M {n(size - p)} 0",
-        f"c {n(a)} 0 {n(a + b)} 0 {n(abc)} {n(d)}",
-        f"a {n(r)} {n(r)} 0 0 1 {n(arc)} {n(arc)}",
-        f"c {n(d)} {n(c)} {n(d)} {n(b + c)} {n(d)} {n(abc)}",
-        f"L {n(size)} {n(size - p)}",
-        f"c 0 {n(a)} 0 {n(a + b)} {n(-d)} {n(abc)}",
-        f"a {n(r)} {n(r)} 0 0 1 {n(-arc)} {n(arc)}",
-        f"c {n(-c)} {n(d)} {n(-(b + c))} {n(d)} {n(-abc)} {n(d)}",
-        f"L {n(p)} {n(size)}",
-        f"c {n(-a)} 0 {n(-(a + b))} 0 {n(-abc)} {n(-d)}",
-        f"a {n(r)} {n(r)} 0 0 1 {n(-arc)} {n(-arc)}",
-        f"c {n(-d)} {n(-c)} {n(-d)} {n(-(b + c))} {n(-d)} {n(-abc)}",
-        f"L 0 {n(p)}",
-        f"c 0 {n(-a)} 0 {n(-(a + b))} {n(d)} {n(-abc)}",
-        f"a {n(r)} {n(r)} 0 0 1 {n(arc)} {n(-arc)}",
-        f"c {n(c)} {n(-d)} {n(b + c)} {n(-d)} {n(abc)} {n(-d)}",
-        "Z",
-    ])
+    return " ".join(
+        [
+            f"M {n(size - p)} 0",
+            f"c {n(a)} 0 {n(a + b)} 0 {n(abc)} {n(d)}",
+            f"a {n(r)} {n(r)} 0 0 1 {n(arc)} {n(arc)}",
+            f"c {n(d)} {n(c)} {n(d)} {n(b + c)} {n(d)} {n(abc)}",
+            f"L {n(size)} {n(size - p)}",
+            f"c 0 {n(a)} 0 {n(a + b)} {n(-d)} {n(abc)}",
+            f"a {n(r)} {n(r)} 0 0 1 {n(-arc)} {n(arc)}",
+            f"c {n(-c)} {n(d)} {n(-(b + c))} {n(d)} {n(-abc)} {n(d)}",
+            f"L {n(p)} {n(size)}",
+            f"c {n(-a)} 0 {n(-(a + b))} 0 {n(-abc)} {n(-d)}",
+            f"a {n(r)} {n(r)} 0 0 1 {n(-arc)} {n(-arc)}",
+            f"c {n(-d)} {n(-c)} {n(-d)} {n(-(b + c))} {n(-d)} {n(-abc)}",
+            f"L 0 {n(p)}",
+            f"c 0 {n(-a)} 0 {n(-(a + b))} {n(d)} {n(-abc)}",
+            f"a {n(r)} {n(r)} 0 0 1 {n(arc)} {n(-arc)}",
+            f"c {n(c)} {n(-d)} {n(b + c)} {n(-d)} {n(abc)} {n(-d)}",
+            "Z",
+        ]
+    )
 
 
 def selfcheck() -> int:
@@ -101,12 +105,12 @@ def selfcheck() -> int:
     d = squircle_path()
     start = 1024 - corner_params(1024 * RADIUS_PCT_IOS26, SMOOTHING, 512)["p"]
     assert d.startswith(f"M {n(start)} 0") and d.endswith("Z"), d[:40]
-    assert d.count(" a ") == 4 and d.count(" c ") == 8   # 4 arcs, 8 easing curves
+    assert d.count(" a ") == 4 and d.count(" c ") == 8  # 4 arcs, 8 easing curves
     # a plain rect and the squircle share a radius but not a shape
     legacy = squircle_path(1024, RADIUS_PCT_LEGACY)
     assert legacy != d
     try:
-        corner_params(600, 0.6, 512)          # over budget must refuse, not fudge
+        corner_params(600, 0.6, 512)  # over budget must refuse, not fudge
     except ValueError:
         pass
     else:
@@ -116,12 +120,16 @@ def selfcheck() -> int:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description=__doc__,
-                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     ap.add_argument("--size", type=float, default=1024.0)
     ap.add_argument("--radius-pct", type=float, default=None)
-    ap.add_argument("--legacy", action="store_true",
-                    help=f"use the iOS 7-18 radius ({RADIUS_PCT_LEGACY}) instead of 26+")
+    ap.add_argument(
+        "--legacy",
+        action="store_true",
+        help=f"use the iOS 7-18 radius ({RADIUS_PCT_LEGACY}) instead of 26+",
+    )
     ap.add_argument("--smoothing", type=float, default=SMOOTHING)
     ap.add_argument("--fill", default="#2A2A2E")
     ap.add_argument("--path-only", action="store_true", help="print just the d= value")
@@ -129,8 +137,11 @@ def main() -> int:
     args = ap.parse_args()
     if args.selfcheck:
         return selfcheck()
-    pct = args.radius_pct if args.radius_pct is not None else (
-        RADIUS_PCT_LEGACY if args.legacy else RADIUS_PCT_IOS26)
+    pct = (
+        args.radius_pct
+        if args.radius_pct is not None
+        else (RADIUS_PCT_LEGACY if args.legacy else RADIUS_PCT_IOS26)
+    )
     d = squircle_path(args.size, pct, args.smoothing)
     if args.path_only:
         print(d)

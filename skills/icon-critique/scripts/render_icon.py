@@ -58,15 +58,15 @@ def png_luma(path: Path) -> tuple[int, int, list[int]] | None:
         return None
     i, idat, w = 8, b"", None
     while i + 12 <= len(d):
-        ln = struct.unpack(">I", d[i:i + 4])[0]
-        typ = d[i + 4:i + 8]
+        ln = struct.unpack(">I", d[i : i + 4])[0]
+        typ = d[i + 4 : i + 8]
         if typ == b"IHDR":
-            w, h = struct.unpack(">II", d[i + 8:i + 16])
+            w, h = struct.unpack(">II", d[i + 8 : i + 16])
             depth, ctype = d[i + 16], d[i + 17]
             if depth != 8 or ctype not in (2, 6):
                 return None
         elif typ == b"IDAT":
-            idat += d[i + 8:i + 8 + ln]
+            idat += d[i + 8 : i + 8 + ln]
         i += 12 + ln
         if typ == b"IEND":
             break
@@ -82,15 +82,20 @@ def png_luma(path: Path) -> tuple[int, int, list[int]] | None:
     for _ in range(h):
         if pos >= len(raw):
             return None
-        f = raw[pos]; pos += 1
-        line = bytearray(raw[pos:pos + stride]); pos += stride
+        f = raw[pos]
+        pos += 1
+        line = bytearray(raw[pos : pos + stride])
+        pos += stride
         for x in range(stride):
             a = line[x - nch] if x >= nch else 0
             bb = prev[x]
             c = prev[x - nch] if x >= nch else 0
-            if f == 1:   line[x] = (line[x] + a) & 0xFF
-            elif f == 2: line[x] = (line[x] + bb) & 0xFF
-            elif f == 3: line[x] = (line[x] + (a + bb) // 2) & 0xFF
+            if f == 1:
+                line[x] = (line[x] + a) & 0xFF
+            elif f == 2:
+                line[x] = (line[x] + bb) & 0xFF
+            elif f == 3:
+                line[x] = (line[x] + (a + bb) // 2) & 0xFF
             elif f == 4:
                 pp = a + bb - c
                 pa, pb, pc = abs(pp - a), abs(pp - bb), abs(pp - c)
@@ -125,7 +130,9 @@ def run(cmd: list[str]) -> bool:
         return False
     if proc.returncode != 0:
         msg = (proc.stderr or proc.stdout or "").strip().splitlines()
-        print(f"  note: {cmd[0]} exited {proc.returncode}: {msg[-1] if msg else ''}", file=sys.stderr)
+        print(
+            f"  note: {cmd[0]} exited {proc.returncode}: {msg[-1] if msg else ''}", file=sys.stderr
+        )
         return False
     return True
 
@@ -145,27 +152,65 @@ def render_qlmanage(svg: Path, size: int, out: Path) -> bool:
 def make_renderer(tool: str):
     if tool == "rsvg-convert":
         return lambda svg, size, out: run(
-            ["rsvg-convert", "--width", str(size), "--height", str(size),
-             "--keep-aspect-ratio", str(svg), "-o", str(out)])
+            [
+                "rsvg-convert",
+                "--width",
+                str(size),
+                "--height",
+                str(size),
+                "--keep-aspect-ratio",
+                str(svg),
+                "-o",
+                str(out),
+            ]
+        )
     if tool == "resvg":
         return lambda svg, size, out: run(
-            ["resvg", "--width", str(size), "--height", str(size), str(svg), str(out)])
+            ["resvg", "--width", str(size), "--height", str(size), str(svg), str(out)]
+        )
     if tool == "cairosvg":
         return lambda svg, size, out: run(
-            ["cairosvg", str(svg), "-o", str(out),
-             "--output-width", str(size), "--output-height", str(size)])
+            [
+                "cairosvg",
+                str(svg),
+                "-o",
+                str(out),
+                "--output-width",
+                str(size),
+                "--output-height",
+                str(size),
+            ]
+        )
     if tool == "cairosvg-module":
         return lambda svg, size, out: run(
-            [sys.executable, "-m", "cairosvg", str(svg), "-o", str(out),
-             "--output-width", str(size), "--output-height", str(size)])
+            [
+                sys.executable,
+                "-m",
+                "cairosvg",
+                str(svg),
+                "-o",
+                str(out),
+                "--output-width",
+                str(size),
+                "--output-height",
+                str(size),
+            ]
+        )
     if tool == "inkscape":
         return lambda svg, size, out: run(
-            ["inkscape", "--export-type=png", f"--export-filename={out}",
-             f"--export-width={size}", f"--export-height={size}", str(svg)])
+            [
+                "inkscape",
+                "--export-type=png",
+                f"--export-filename={out}",
+                f"--export-width={size}",
+                f"--export-height={size}",
+                str(svg),
+            ]
+        )
     if tool == "magick":
         return lambda svg, size, out: run(
-            ["magick", "-background", "none", str(svg),
-             "-resize", f"{size}x{size}", str(out)])
+            ["magick", "-background", "none", str(svg), "-resize", f"{size}x{size}", str(out)]
+        )
     if tool == "qlmanage":
         return render_qlmanage
     raise ValueError(tool)
@@ -177,6 +222,7 @@ def detect() -> tuple[str, object] | None:
             return tool, make_renderer(tool)
     try:
         import cairosvg  # noqa: F401
+
         return "cairosvg-module", make_renderer("cairosvg-module")
     except ImportError:
         return None
@@ -185,12 +231,17 @@ def detect() -> tuple[str, object] | None:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("file", type=Path)
-    ap.add_argument("--sizes", default=DEFAULT_SIZES,
-                    help=f"comma-separated px sizes (default: {DEFAULT_SIZES})")
-    ap.add_argument("--out", type=Path, default=None,
-                    help="output dir (default: icon-design/renders/<stem>/)")
-    ap.add_argument("--html", action="store_true",
-                    help="also write preview.html (light/dark strips)")
+    ap.add_argument(
+        "--sizes",
+        default=DEFAULT_SIZES,
+        help=f"comma-separated px sizes (default: {DEFAULT_SIZES})",
+    )
+    ap.add_argument(
+        "--out", type=Path, default=None, help="output dir (default: icon-design/renders/<stem>/)"
+    )
+    ap.add_argument(
+        "--html", action="store_true", help="also write preview.html (light/dark strips)"
+    )
     args = ap.parse_args()
 
     if not args.file.is_file():
@@ -213,8 +264,11 @@ def main() -> int:
         return 2
     tool, renderer = found
     if tool == "qlmanage":
-        print("note: using macOS qlmanage fallback (fine for review; install "
-              "librsvg or resvg for pixel-exact export work)", file=sys.stderr)
+        print(
+            "note: using macOS qlmanage fallback (fine for review; install "
+            "librsvg or resvg for pixel-exact export work)",
+            file=sys.stderr,
+        )
 
     out_dir = args.out or Path("icon-design/renders") / args.file.stem
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -240,10 +294,13 @@ def main() -> int:
         cov = ink_coverage(out)
         note = ""
         if cov is not None and size == 64:
-            flag = ("  <- thin: the thinnest third of a 66-mark ballot was rejected "
-                    "at 2x the base rate" if cov < 0.165 else
-                    "  <- heavy: the heaviest third had a zero rejection rate"
-                    if cov > 0.21 else "")
+            flag = (
+                "  <- thin: the thinnest third of a 66-mark ballot was rejected at 2x the base rate"
+                if cov < 0.165
+                else "  <- heavy: the heaviest third had a zero rejection rate"
+                if cov > 0.21
+                else ""
+            )
             note = f"  ink={cov:.1%}{flag}"
         elif cov is not None:
             note = f"  ink={cov:.1%}"
@@ -256,13 +313,16 @@ def main() -> int:
             imgs = "".join(
                 f'<figure><img src="{p.name}" width="{min(s, 256)}" alt="{s}px">'
                 f"<figcaption>{s}px</figcaption></figure>"
-                for s, p in rendered)
+                for s, p in rendered
+            )
             # pixel-doubled views of the small sizes (nearest-neighbor via CSS)
             imgs += "".join(
                 f'<figure><img src="{p.name}" width="{s * 4}" alt="{s}px zoomed" '
                 f'style="image-rendering:pixelated">'
-                f"<figcaption>{s}px ×4</figcaption></figure>"
-                for s, p in rendered if s <= 32)
+                f"<figcaption>{s}px ×4</figcaption></figure>"  # noqa: RUF001 - U+00D7 is intentional in size labels
+                for s, p in rendered
+                if s <= 32
+            )
             rows.append(f'<section style="background:{bg}"><h2>{label}</h2>{imgs}</section>')
         html.write_text(
             "<!doctype html><meta charset='utf-8'><title>icon preview</title>"
@@ -270,7 +330,9 @@ def main() -> int:
             "h2{color:#888;font-size:12px;text-transform:uppercase}"
             "figure{display:inline-block;text-align:center;margin:8px}"
             "figcaption{color:#888;font-size:11px}img{image-rendering:auto}</style>"
-            + "".join(rows), encoding="utf-8")
+            + "".join(rows),
+            encoding="utf-8",
+        )
         print(f"PREVIEW {html}")
 
     if failures:

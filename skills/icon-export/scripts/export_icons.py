@@ -44,11 +44,16 @@ SVG_NS = "http://www.w3.org/2000/svg"
 ALL_TARGETS = ("web", "apple", "android", "github")
 ICO_SIZES = (16, 32, 48)
 ICONSET = [  # (filename, pixel size) — iconutil naming convention
-    ("icon_16x16.png", 16), ("icon_16x16@2x.png", 32),
-    ("icon_32x32.png", 32), ("icon_32x32@2x.png", 64),
-    ("icon_128x128.png", 128), ("icon_128x128@2x.png", 256),
-    ("icon_256x256.png", 256), ("icon_256x256@2x.png", 512),
-    ("icon_512x512.png", 512), ("icon_512x512@2x.png", 1024),
+    ("icon_16x16.png", 16),
+    ("icon_16x16@2x.png", 32),
+    ("icon_32x32.png", 32),
+    ("icon_32x32@2x.png", 64),
+    ("icon_128x128.png", 128),
+    ("icon_128x128@2x.png", 256),
+    ("icon_256x256.png", 256),
+    ("icon_256x256@2x.png", 512),
+    ("icon_512x512.png", 512),
+    ("icon_512x512@2x.png", 1024),
 ]
 INSTALL_HINTS = [
     ("rsvg-convert", "brew install librsvg          # or: apt install librsvg2-bin"),
@@ -76,7 +81,7 @@ MANIFEST = """{
 """
 
 
-def fail(msg: str, code: int = 1) -> "int":
+def fail(msg: str, code: int = 1) -> int:
     print(f"ERROR: {msg}", file=sys.stderr)
     return code
 
@@ -89,7 +94,10 @@ def run(cmd: list[str]) -> bool:
         return False
     if proc.returncode != 0:
         tail = (proc.stderr or proc.stdout or "").strip().splitlines()
-        print(f"  note: {cmd[0]} exited {proc.returncode}: {tail[-1] if tail else ''}", file=sys.stderr)
+        print(
+            f"  note: {cmd[0]} exited {proc.returncode}: {tail[-1] if tail else ''}",
+            file=sys.stderr,
+        )
         return False
     return True
 
@@ -104,14 +112,18 @@ def render_qlmanage(svg: Path, w: int, h: int, out: Path) -> bool:
             side = max(w, h)
             try:
                 ET.register_namespace("", SVG_NS)
-                inner = ET.parse(svg).getroot()
+                inner = ET.parse(svg).getroot()  # noqa: S314 - parses a local file the caller supplies; defusedxml would add a runtime dependency a skill must not have
             except (ET.ParseError, OSError):
                 return False
-            box = ET.Element(f"{{{SVG_NS}}}svg", {
-                "viewBox": f"0 0 {side} {side}",
-                "width": str(side), "height": str(side)})
-            g = ET.SubElement(box, f"{{{SVG_NS}}}g", {
-                "transform": f"translate({(side - w) / 2:g},{(side - h) / 2:g})"})
+            box = ET.Element(
+                f"{{{SVG_NS}}}svg",
+                {"viewBox": f"0 0 {side} {side}", "width": str(side), "height": str(side)},
+            )
+            g = ET.SubElement(
+                box,
+                f"{{{SVG_NS}}}g",
+                {"transform": f"translate({(side - w) / 2:g},{(side - h) / 2:g})"},
+            )
             for child in inner:
                 g.append(copy.deepcopy(child))
             src = Path(td) / "boxed.svg"
@@ -121,8 +133,9 @@ def render_qlmanage(svg: Path, w: int, h: int, out: Path) -> bool:
         produced = Path(td) / (src.name + ".png")
         if not produced.is_file():
             return False
-        if w != h and not run(["sips", "-c", str(h), str(w),
-                               str(produced), "--out", str(produced)]):
+        if w != h and not run(
+            ["sips", "-c", str(h), str(w), str(produced), "--out", str(produced)]
+        ):
             return False
         shutil.move(str(produced), out)
     return True
@@ -131,24 +144,42 @@ def render_qlmanage(svg: Path, w: int, h: int, out: Path) -> bool:
 def make_renderer(tool: str):
     if tool == "rsvg-convert":
         return lambda svg, w, h, out: run(
-            ["rsvg-convert", "--width", str(w), "--height", str(h),
-             "--keep-aspect-ratio", str(svg), "-o", str(out)])
+            [
+                "rsvg-convert",
+                "--width",
+                str(w),
+                "--height",
+                str(h),
+                "--keep-aspect-ratio",
+                str(svg),
+                "-o",
+                str(out),
+            ]
+        )
     if tool == "resvg":
         return lambda svg, w, h, out: run(
-            ["resvg", "--width", str(w), "--height", str(h), str(svg), str(out)])
+            ["resvg", "--width", str(w), "--height", str(h), str(svg), str(out)]
+        )
     if tool in ("cairosvg", "cairosvg-module"):
         base = ["cairosvg"] if tool == "cairosvg" else [sys.executable, "-m", "cairosvg"]
         return lambda svg, w, h, out: run(
-            base + [str(svg), "-o", str(out),
-                    "--output-width", str(w), "--output-height", str(h)])
+            [*base, str(svg), "-o", str(out), "--output-width", str(w), "--output-height", str(h)]
+        )
     if tool == "inkscape":
         return lambda svg, w, h, out: run(
-            ["inkscape", "--export-type=png", f"--export-filename={out}",
-             f"--export-width={w}", f"--export-height={h}", str(svg)])
+            [
+                "inkscape",
+                "--export-type=png",
+                f"--export-filename={out}",
+                f"--export-width={w}",
+                f"--export-height={h}",
+                str(svg),
+            ]
+        )
     if tool == "magick":
         return lambda svg, w, h, out: run(
-            ["magick", "-background", "none", str(svg),
-             "-resize", f"{w}x{h}", str(out)])
+            ["magick", "-background", "none", str(svg), "-resize", f"{w}x{h}", str(out)]
+        )
     if tool == "qlmanage":
         return render_qlmanage
     raise ValueError(tool)
@@ -156,11 +187,13 @@ def make_renderer(tool: str):
 
 def stripping(render):
     """Wrap a renderer so no PNG leaves this exporter carrying metadata."""
+
     def wrapped(svg, w, h, out):
         ok = render(svg, w, h, out)
         if ok:
             strip_png_metadata(Path(out))
         return ok
+
     return wrapped
 
 
@@ -170,6 +203,7 @@ def detect():
             return tool, stripping(make_renderer(tool))
     try:
         import cairosvg  # noqa: F401
+
         return "cairosvg-module", stripping(make_renderer("cairosvg-module"))
     except ImportError:
         return None
@@ -183,7 +217,7 @@ PNG_SIG = b"\x89PNG\r\n\x1a\n"
 # Colour-critical chunks (sRGB/gAMA/cHRM/iCCP/tRNS/PLTE/bKGD/sBIT) are kept:
 # dropping those changes how the image renders.
 PNG_META_CHUNKS = {b"eXIf", b"tEXt", b"iTXt", b"zTXt", b"tIME", b"caBX", b"dSIG"}
-STRIPPED = [0, 0]   # files touched, bytes removed — reported at the end
+STRIPPED = [0, 0]  # files touched, bytes removed — reported at the end
 
 
 def strip_png_metadata(path: Path) -> int:
@@ -201,11 +235,11 @@ def strip_png_metadata(path: Path) -> int:
     out = bytearray(d[:8])
     i, removed = 8, 0
     while i + 12 <= len(d):
-        ln = struct.unpack(">I", d[i:i + 4])[0]
-        typ = d[i + 4:i + 8]
+        ln = struct.unpack(">I", d[i : i + 4])[0]
+        typ = d[i + 4 : i + 8]
         end = i + 12 + ln
         if end > len(d):
-            return 0                      # truncated — do not rewrite
+            return 0  # truncated — do not rewrite
         if typ in PNG_META_CHUNKS:
             removed += end - i
         else:
@@ -255,16 +289,35 @@ def flatten_appstore_png(path: Path, bg_fill: str) -> None:
     ImageMagick is available; otherwise warn loudly with the exact command."""
     if not png_has_alpha_channel(path):
         return
-    if shutil.which("magick") and run(
-            ["magick", str(path), "-background", bg_fill, "-alpha", "remove",
-             "-alpha", "off", str(path)]) and not png_has_alpha_channel(path):
+    if (
+        shutil.which("magick")
+        and run(
+            [
+                "magick",
+                str(path),
+                "-background",
+                bg_fill,
+                "-alpha",
+                "remove",
+                "-alpha",
+                "off",
+                str(path),
+            ]
+        )
+        and not png_has_alpha_channel(path)
+    ):
         strip_png_metadata(path)
-        print(f"note: flattened alpha channel on {path.name} (App Store requires no alpha)",
-              file=sys.stderr)
+        print(
+            f"note: flattened alpha channel on {path.name} (App Store requires no alpha)",
+            file=sys.stderr,
+        )
         return
-    print(f"WARN: {path} has an alpha channel; App Store uploads may reject it. "
-          f"Flatten with: magick {path.name} -background \"{bg_fill}\" "
-          f"-alpha remove -alpha off {path.name}", file=sys.stderr)
+    print(
+        f"WARN: {path} has an alpha channel; App Store uploads may reject it. "
+        f'Flatten with: magick {path.name} -background "{bg_fill}" '
+        f"-alpha remove -alpha off {path.name}",
+        file=sys.stderr,
+    )
 
 
 def write_ico(pngs: list[tuple[int, bytes]], out: Path) -> None:
@@ -273,9 +326,17 @@ def write_ico(pngs: list[tuple[int, bytes]], out: Path) -> None:
     entries, blobs = b"", b""
     offset = 6 + 16 * len(pngs)
     for size, data in pngs:
-        entries += struct.pack("<BBBBHHII", 0 if size >= 256 else size,
-                               0 if size >= 256 else size, 0, 0, 1, 32,
-                               len(data), offset)
+        entries += struct.pack(
+            "<BBBBHHII",
+            0 if size >= 256 else size,
+            0 if size >= 256 else size,
+            0,
+            0,
+            1,
+            32,
+            len(data),
+            offset,
+        )
         blobs += data
         offset += len(data)
     out.write_bytes(header + entries + blobs)
@@ -289,14 +350,24 @@ def check_ico(path: Path, expected: int) -> bool:
     if len(data) < 6 or struct.unpack("<HHH", data[:6]) != (0, 1, expected):
         return False
     for i in range(expected):
-        length, off = struct.unpack("<II", data[6 + 16 * i + 8: 6 + 16 * i + 16])
-        if data[off:off + 8] != b"\x89PNG\r\n\x1a\n" or off + length > len(data):
+        length, off = struct.unpack("<II", data[6 + 16 * i + 8 : 6 + 16 * i + 16])
+        if data[off : off + 8] != b"\x89PNG\r\n\x1a\n" or off + length > len(data):
             return False
     return True
 
 
-UNSAFE_PATTERNS = ("<!doctype", "<!entity", "<script", "javascript:",
-                   "<foreignobject", "<image", "url(", "data:", "http://", "https://")
+UNSAFE_PATTERNS = (
+    "<!doctype",
+    "<!entity",
+    "<script",
+    "javascript:",
+    "<foreignobject",
+    "<image",
+    "url(",
+    "data:",
+    "http://",
+    "https://",
+)
 
 
 def load_master(path: Path):
@@ -309,16 +380,21 @@ def load_master(path: Path):
     lowered = re.sub(r'xmlns(?::[a-z]+)?="[^"]*"', "", text.lower())
     for pat in UNSAFE_PATTERNS:
         if pat in lowered:
-            return None, (f"master contains banned content ({pat!r}) — this exporter "
-                          "only accepts icon-draw house-subset SVGs; run check_svg.py")
+            return None, (
+                f"master contains banned content ({pat!r}) — this exporter "
+                "only accepts icon-draw house-subset SVGs; run check_svg.py"
+            )
     ET.register_namespace("", SVG_NS)
     try:
-        tree = ET.ElementTree(ET.fromstring(text))
+        tree = ET.ElementTree(ET.fromstring(text))  # noqa: S314 - parses a local file the caller supplies; defusedxml would add a runtime dependency a skill must not have
     except ET.ParseError as exc:
         return None, f"cannot parse master SVG: {exc}"
     root = tree.getroot()
     if (root.get("viewBox") or "").split() != ["0", "0", "1024", "1024"]:
-        return None, f'master viewBox must be "0 0 1024 1024" (found {root.get("viewBox")!r}) — run icon-draw/check_svg.py first'
+        return (
+            None,
+            f'master viewBox must be "0 0 1024 1024" (found {root.get("viewBox")!r}) — run icon-draw/check_svg.py first',
+        )
     return tree, None
 
 
@@ -342,8 +418,10 @@ def square_variant(tree: ET.ElementTree, dest: Path) -> str | None:
             bg = el
             break
     if bg is None:
-        return ('master has no background <path id="bg"> or full-canvas <rect> '
-                "— not an icon-draw master")
+        return (
+            'master has no background <path id="bg"> or full-canvas <rect> '
+            "— not an icon-draw master"
+        )
     if bg.tag.rsplit("}", 1)[-1] == "path":
         fill = bg.get("fill", "#2A2A2E")
         bg.tag = f"{{{SVG_NS}}}rect"
@@ -366,12 +444,11 @@ def social_variant(tree: ET.ElementTree, dest: Path) -> str | None:
     root = tree.getroot()
     bg = root.find(f"{{{SVG_NS}}}rect")
     fill = (bg.get("fill") if bg is not None else None) or "#2A2A2E"
-    banner = ET.Element(f"{{{SVG_NS}}}svg",
-                        {"viewBox": "0 0 1280 640", "width": "1280", "height": "640"})
-    ET.SubElement(banner, f"{{{SVG_NS}}}rect",
-                  {"width": "1280", "height": "640", "fill": fill})
-    g = ET.SubElement(banner, f"{{{SVG_NS}}}g",
-                      {"transform": "translate(384,64) scale(0.5)"})
+    banner = ET.Element(
+        f"{{{SVG_NS}}}svg", {"viewBox": "0 0 1280 640", "width": "1280", "height": "640"}
+    )
+    ET.SubElement(banner, f"{{{SVG_NS}}}rect", {"width": "1280", "height": "640", "fill": fill})
+    g = ET.SubElement(banner, f"{{{SVG_NS}}}g", {"transform": "translate(384,64) scale(0.5)"})
     for child in root:
         g.append(copy.deepcopy(child))
     ET.ElementTree(banner).write(dest, encoding="utf-8", xml_declaration=False)
@@ -381,18 +458,26 @@ def social_variant(tree: ET.ElementTree, dest: Path) -> str | None:
 def selfcheck() -> int:
     """PNG chunk surgery must drop metadata and keep everything that renders."""
     import zlib
+
     def chunk(typ: bytes, payload: bytes) -> bytes:
-        return (struct.pack(">I", len(payload)) + typ + payload
-                + struct.pack(">I", zlib.crc32(typ + payload) & 0xFFFFFFFF))
-    png = (PNG_SIG
-           + chunk(b"IHDR", struct.pack(">IIBBBBB", 1, 1, 8, 6, 0, 0, 0))
-           + chunk(b"sRGB", b"\x00")
-           + chunk(b"gAMA", struct.pack(">I", 45455))
-           + chunk(b"eXIf", b"MM\x00*deadbeef")
-           + chunk(b"tEXt", b"Software\x00qlmanage")
-           + chunk(b"iTXt", b"XML:com.adobe.xmp\x00\x00\x00\x00\x00<x:xmpmeta/>")
-           + chunk(b"IDAT", zlib.compress(b"\x00\xff\xff\xff\xff"))
-           + chunk(b"IEND", b""))
+        return (
+            struct.pack(">I", len(payload))
+            + typ
+            + payload
+            + struct.pack(">I", zlib.crc32(typ + payload) & 0xFFFFFFFF)
+        )
+
+    png = (
+        PNG_SIG
+        + chunk(b"IHDR", struct.pack(">IIBBBBB", 1, 1, 8, 6, 0, 0, 0))
+        + chunk(b"sRGB", b"\x00")
+        + chunk(b"gAMA", struct.pack(">I", 45455))
+        + chunk(b"eXIf", b"MM\x00*deadbeef")
+        + chunk(b"tEXt", b"Software\x00qlmanage")
+        + chunk(b"iTXt", b"XML:com.adobe.xmp\x00\x00\x00\x00\x00<x:xmpmeta/>")
+        + chunk(b"IDAT", zlib.compress(b"\x00\xff\xff\xff\xff"))
+        + chunk(b"IEND", b"")
+    )
     with tempfile.TemporaryDirectory() as td:
         f = Path(td) / "t.png"
         f.write_bytes(png)
@@ -404,14 +489,16 @@ def selfcheck() -> int:
             assert gone not in got, gone
         for kept in (PNG_SIG, b"IHDR", b"sRGB", b"gAMA", b"IDAT", b"IEND"):
             assert kept in got, kept
-        assert png_size(f) == (1, 1)                     # pixels untouched
-        assert strip_png_metadata(f) == 0                # idempotent
-        f.write_bytes(png[:20])                          # truncated
+        assert png_size(f) == (1, 1)  # pixels untouched
+        assert strip_png_metadata(f) == 0  # idempotent
+        f.write_bytes(png[:20])  # truncated
         assert strip_png_metadata(f) == 0 and f.read_bytes() == png[:20]
 
         svg = Path(td) / "m.svg"
-        svg.write_text('<svg xmlns="http://www.w3.org/2000/svg">\n  <!-- note -->\n'
-                       '  <metadata><rdf/></metadata>\n  <rect width="1"/>\n</svg>\n')
+        svg.write_text(
+            '<svg xmlns="http://www.w3.org/2000/svg">\n  <!-- note -->\n'
+            '  <metadata><rdf/></metadata>\n  <rect width="1"/>\n</svg>\n'
+        )
         dest = Path(td) / "out.svg"
         clean_svg_copy(svg, dest)
         t = dest.read_text()
@@ -422,14 +509,17 @@ def selfcheck() -> int:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("master", type=Path, nargs="?",
-                    help="approved master SVG (icon-design/icon.svg)")
+    ap.add_argument(
+        "master", type=Path, nargs="?", help="approved master SVG (icon-design/icon.svg)"
+    )
     ap.add_argument("--out", type=Path, default=Path("icon-design/export"))
-    ap.add_argument("--targets", default="all",
-                    help="comma list of web,apple,android,github (default: all)")
+    ap.add_argument(
+        "--targets", default="all", help="comma list of web,apple,android,github (default: all)"
+    )
     ap.add_argument("--name", default="icon", help="basename for icon.svg/iconset")
-    ap.add_argument("--selfcheck", action="store_true",
-                    help="run the built-in metadata-strip checks and exit")
+    ap.add_argument(
+        "--selfcheck", action="store_true", help="run the built-in metadata-strip checks and exit"
+    )
     ap.add_argument("--force", action="store_true", help="allow overwriting existing files")
     args = ap.parse_args()
 
@@ -439,8 +529,11 @@ def main() -> int:
         return fail("MASTER.svg is required (or pass --selfcheck)", 2)
     if not args.master.is_file():
         return fail(f"no such file: {args.master} — approve a master via icon-critique first")
-    targets = ALL_TARGETS if args.targets == "all" else tuple(
-        t.strip() for t in args.targets.split(",") if t.strip())
+    targets = (
+        ALL_TARGETS
+        if args.targets == "all"
+        else tuple(t.strip() for t in args.targets.split(",") if t.strip())
+    )
     bad = [t for t in targets if t not in ALL_TARGETS]
     if bad:
         return fail(f"unknown target(s) {bad}; valid: {ALL_TARGETS}")
@@ -461,10 +554,12 @@ def main() -> int:
     # Build the render plan: (relpath, source_kind, w, h)
     plan: list[tuple[str, str, int, int]] = []
     if "web" in targets:
-        plan += [("apple-touch-icon.png", "square", 180, 180),
-                 ("icon-192.png", "rounded", 192, 192),
-                 ("icon-512.png", "rounded", 512, 512),
-                 ("icon-mask-512.png", "square", 512, 512)]
+        plan += [
+            ("apple-touch-icon.png", "square", 180, 180),
+            ("icon-192.png", "rounded", 192, 192),
+            ("icon-512.png", "rounded", 512, 512),
+            ("icon-mask-512.png", "square", 512, 512),
+        ]
     if "apple" in targets:
         plan += [("appstore-1024.png", "square", 1024, 1024)]
         plan += [(f"{args.name}.iconset/{fn}", "rounded", s, s) for fn, s in ICONSET]
@@ -472,20 +567,27 @@ def main() -> int:
         plan += [("play-store-512.png", "square", 512, 512)]
     if "github" in targets:
         # avatar from the square variant: GitHub masks avatars itself
-        plan += [("social-preview-1280x640.png", "social", 1280, 640),
-                 ("avatar-512.png", "square", 512, 512)]
+        plan += [
+            ("social-preview-1280x640.png", "social", 1280, 640),
+            ("avatar-512.png", "square", 512, 512),
+        ]
 
     text_outputs = []
     if "web" in targets:
-        text_outputs = [("favicon.ico", None), (f"{args.name}.svg", None),
-                        ("snippet.html", SNIPPET_HTML), ("manifest.webmanifest", MANIFEST)]
+        text_outputs = [
+            ("favicon.ico", None),
+            (f"{args.name}.svg", None),
+            ("snippet.html", SNIPPET_HTML),
+            ("manifest.webmanifest", MANIFEST),
+        ]
 
     # Overwrite guard: check every planned path up front.
     planned = [out / rel for rel, *_ in plan] + [out / rel for rel, _ in text_outputs]
     existing = [p for p in planned if p.exists()]
     if existing and not args.force:
-        print("ERROR: refusing to overwrite existing files (pass --force to allow):",
-              file=sys.stderr)
+        print(
+            "ERROR: refusing to overwrite existing files (pass --force to allow):", file=sys.stderr
+        )
         for p in existing:
             print(f"  {p}", file=sys.stderr)
         return 3
@@ -523,7 +625,9 @@ def main() -> int:
             print(f"WROTE {dest} ({w}x{h})")
             if rel in ("appstore-1024.png", "play-store-512.png"):
                 bg = tree.getroot().find(f"{{{SVG_NS}}}rect")
-                flatten_appstore_png(dest, (bg.get("fill") if bg is not None else None) or "#2A2A2E")
+                flatten_appstore_png(
+                    dest, (bg.get("fill") if bg is not None else None) or "#2A2A2E"
+                )
 
         if "web" in targets and not failures:
             ico_parts = []
@@ -544,7 +648,10 @@ def main() -> int:
                     print(f"WROTE {ico} (sizes {'/'.join(map(str, ICO_SIZES))})")
             clean_svg_copy(args.master, out / f"{args.name}.svg")
             print(f"WROTE {out / (args.name + '.svg')} (master copy, comments stripped)")
-            for rel, content in (("snippet.html", SNIPPET_HTML), ("manifest.webmanifest", MANIFEST)):
+            for rel, content in (
+                ("snippet.html", SNIPPET_HTML),
+                ("manifest.webmanifest", MANIFEST),
+            ):
                 (out / rel).write_text(content, encoding="utf-8")
                 print(f"WROTE {out / rel}")
 
@@ -555,22 +662,31 @@ def main() -> int:
             if run(["iconutil", "-c", "icns", str(iconset), "-o", str(icns)]) and icns.is_file():
                 print(f"WROTE {icns}")
             else:
-                print("WARN: iconutil failed — .iconset left for manual conversion", file=sys.stderr)
+                print(
+                    "WARN: iconutil failed — .iconset left for manual conversion", file=sys.stderr
+                )
         else:
-            print(f"note: not macOS or no iconutil — convert {iconset} with "
-                  f"`iconutil -c icns {iconset.name}` on a Mac", file=sys.stderr)
+            print(
+                f"note: not macOS or no iconutil — convert {iconset} with "
+                f"`iconutil -c icns {iconset.name}` on a Mac",
+                file=sys.stderr,
+            )
 
     if failures:
         print(f"FAIL: {failures} asset(s) failed (renderer: {tool})")
         return 1
     if STRIPPED[0]:
-        print(f"STRIPPED metadata from {STRIPPED[0]} PNG(s) ({STRIPPED[1]} bytes: "
-              f"{'/'.join(c.decode() for c in sorted(PNG_META_CHUNKS))} chunks)")
+        print(
+            f"STRIPPED metadata from {STRIPPED[0]} PNG(s) ({STRIPPED[1]} bytes: "
+            f"{'/'.join(c.decode() for c in sorted(PNG_META_CHUNKS))} chunks)"
+        )
     print(f"OK: export complete in {out} (renderer: {tool})")
     if tool == "qlmanage":
-        print("note: rendered via macOS qlmanage fallback — install librsvg "
-              "(brew install librsvg) and re-run for production-grade rasters",
-              file=sys.stderr)
+        print(
+            "note: rendered via macOS qlmanage fallback — install librsvg "
+            "(brew install librsvg) and re-run for production-grade rasters",
+            file=sys.stderr,
+        )
     return 0
 
 
