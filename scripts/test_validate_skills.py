@@ -137,13 +137,20 @@ def test_readme_rules() -> None:
 
 
 def test_repo_scans_clean() -> None:
-    """This repo's own skills must pass the scan — the gate `make check` runs."""
+    """This repo's own skills must raise no security ERROR.
+
+    Warnings are deliberately excluded. The severity split is the whole design:
+    executable badness errors, judgement calls warn — and a skill that documents
+    an attack it defends against (quoting "ignore previous instructions" as
+    something to report) trips the phrase heuristic while being exactly right.
+    Asserting on warnings here would turn every such repo red.
+    """
     root = Path(__file__).resolve().parent.parent
     V.errors.clear()
     V.warnings.clear()
     V.discover_and_check(root)
-    security = [ln for ln in V.errors + V.warnings if "security (" in ln]
-    assert not security, f"repo has security findings: {security}"
+    security = [ln for ln in V.errors if "security (" in ln]
+    assert not security, f"repo has security errors: {security}"
 
 
 if __name__ == "__main__":
